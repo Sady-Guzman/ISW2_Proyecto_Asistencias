@@ -17,3 +17,8 @@ docker-compose down
 # Entrar al bash/postrges psql del container DB:
 docker-compose exec db psql -U postgres
 docker-compose exec db psql -U postgres -d postgres
+
+# postgres
+\dt -> tablas
+\d 'nombre_tabla' -> equivalente a .schema en sqlite3
+\q -> quit
