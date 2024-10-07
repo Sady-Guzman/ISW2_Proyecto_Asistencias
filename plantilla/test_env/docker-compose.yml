@@ -20,6 +20,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persist PostgreSQL data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Run init.sql on startup
 
 volumes:
   postgres_data:

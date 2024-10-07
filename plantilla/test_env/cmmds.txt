@@ -1,0 +1,19 @@
+# Construir container de postgres 'some-postrges'
+# Descontinuado, Usar compose.
+$ docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+docker run --name some-postgres -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+
+
+# Construir container flask con Dockerfile
+# descontinuado, usar compose
+docker build -t flask_app .    
+docker run -p 5000:5000 flask_app
+
+# Construir y ejecutar compose (primera/resto de veces)
+docker-compose up --build
+docker-compose up
+docker-compose down
+
+# Entrar al bash/postrges psql del container DB:
+docker-compose exec db psql -U postgres
+docker-compose exec db psql -U postgres -d postgres

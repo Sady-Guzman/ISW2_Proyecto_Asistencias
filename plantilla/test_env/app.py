@@ -8,7 +8,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 app = Flask(__name__)
 
 # Custom filter
-app.jinja_env.filters["usd"] = lambda value: f"${value:,.2f}"
+# app.jinja_env.filters["usd"] = lambda value: f"${value:,.2f}"
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
@@ -49,17 +49,6 @@ def index():
     """Show portfolio of stocks"""
     return apology("TODO")
 
-@app.route("/buy", methods=["GET", "POST"])
-# @login_required
-def buy():
-    """Buy shares of stock"""
-    return apology("TODO")
-
-@app.route("/history")
-# @login_required
-def history():
-    """Show history of transactions"""
-    return apology("TODO")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -94,19 +83,9 @@ def logout():
     session.clear()
     return redirect("/")
 
-@app.route("/quote", methods=["GET", "POST"])
-# @login_required
-def quote():
-    """Get stock quote."""
-    return apology("TODO")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
     return apology("TODO")
 
-@app.route("/sell", methods=["GET", "POST"])
-# @login_required
-def sell():
-    """Sell shares of stock"""
-    return apology("TODO")
