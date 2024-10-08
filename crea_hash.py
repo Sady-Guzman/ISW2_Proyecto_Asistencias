@@ -1,6 +1,7 @@
 from werkzeug.security import generate_password_hash
 
-# Replace 'your_password_here' with the desired password for the admin user
+# string para hashear.
+# Dejar esto en .gitignore mas adelante
 password = "domino"
 hashed_password = generate_password_hash(password)
 
