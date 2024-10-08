@@ -22,3 +22,4 @@ docker-compose exec db psql -U postgres -d postgres
 \dt -> tablas
 \d 'nombre_tabla' -> equivalente a .schema en sqlite3
 \q -> quit
+SELECT * FROM users;
