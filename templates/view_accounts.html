@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    User Accounts
+{% endblock %}
+
+{% block main %}
+    <main class="container py-5 text-center">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th class="text-start">Nombre de usuario</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JINJA FOR LOOP to build the table rows dynamically -->
+                {% for user in users %}
+                    <tr>
+                        <td class="text-start">{{ user[0] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+{% endblock %}

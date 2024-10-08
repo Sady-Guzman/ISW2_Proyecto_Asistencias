@@ -233,3 +233,19 @@ def change_password():
         return redirect("/")
 
 
+@app.route("/view_accounts")
+def view_accounts():
+    """View all user accounts"""
+
+    db = get_db()  # Assuming you have a function to get the database connection
+    cursor = db.cursor()
+
+    # Fetch all users from the database
+    cursor.execute("SELECT username FROM users")
+    users = cursor.fetchall()  # This will return a list of tuples (username, created_at)
+
+    cursor.close()  # Close the cursor
+    db.close()  # Close the database connection
+
+    # Pass the list of users to the HTML template
+    return render_template("view_accounts.html", users=users)
