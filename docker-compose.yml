@@ -39,7 +39,7 @@ services:
     volumes:
       - /dev/shm:/dev/shm
     # profiles:
-      # - testing  # Add a profile to ensure it only runs when specified
+    #   - testing  # Add a profile to ensure it only runs when specified
 
   test:
     build:
