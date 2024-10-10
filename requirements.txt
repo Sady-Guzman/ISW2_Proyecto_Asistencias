@@ -3,3 +3,5 @@ Flask-Session
 Werkzeug
 Jinja2>=3.0
 psycopg2-binary
+pytest
+selenium
