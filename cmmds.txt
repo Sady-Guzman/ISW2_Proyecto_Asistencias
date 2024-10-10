@@ -28,5 +28,7 @@ SELECT * FROM users;
 # TESTING
 
 build compose: docker compose up --build
-start testing (test and selenium containers): docker compose --profile testing up 
-or docker compose --profile testing up test (en caso de no necesitar selenium)
+start testing containers: docker-compose --profile testing up --build 
+
+* buscar forma de no necesitar selenium en containers que se ejecutan por defecto, La idea es agregarlo a perfil de testing.
+    Por ahora hacer esto resulta en fallo de pruebas
