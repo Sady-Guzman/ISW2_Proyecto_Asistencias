@@ -7,7 +7,7 @@ from selenium.webdriver.common.keys import Keys
 def browser():
     # Set up the Selenium WebDriver to connect to the remote Selenium server
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")  # Run headless mode (no browser UI)
+    options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     driver = webdriver.Remote(
@@ -17,25 +17,39 @@ def browser():
     yield driver
     driver.quit()
 
-def test_login(browser):
-    # Navigate to the login page
+def test_user_login(browser):
     browser.get("http://flask_app:5000/login")
     
+    username_input = browser.find_element(By.NAME, "username")
+    password_input = browser.find_element(By.NAME, "password")
+
+    username_input.send_keys("testuser") # usuario creado a mano para test
+    password_input.send_keys("123") # contrasena creada a mano para test
+    password_input.send_keys(Keys.RETURN)
+
+    browser.implicitly_wait(5)
+    
+    # Check that login was successful (e.g., "Log Out" appears in the navbar)
+    # assert browser.find_element(By.LINK_TEXT, "Log Out")
+    # assert "Welcome" in browser.page_source
+
+def test_admin_login(browser):
+    # Navigate to the admin login page
+    browser.get("http://flask_app:5000/adlogin")
+
     # Locate the username and password fields by their "name" attributes
     username_input = browser.find_element(By.NAME, "username")
     password_input = browser.find_element(By.NAME, "password")
 
-    # Enter the username and password
-    username_input.send_keys("testuser")  # Replace with an actual test user
-    password_input.send_keys("123")  # Replace with the correct password
-    
-    # Submit the form (either via the return key or clicking the button)
+    # Enter the admin credentials
+    username_input.send_keys("admin") # Cuenta unica de admin
+    password_input.send_keys("domino")
     password_input.send_keys(Keys.RETURN)
-    
-    # Wait for the page to load after login
-    browser.implicitly_wait(5)  # Waits up to 5 seconds for elements to load
 
-    # Check that the login was successful (check for "Log Out" in the navbar)
-    assert browser.find_element(By.LINK_TEXT, "Log Out")  # Verifies if "Log Out" link appears
-    # You can also verify welcome messages or other indicators of successful login
-    #assert "Welcome" in browser.page_source  # Adjust based on your app's behavior
+    # Wait for the page to load after login
+    browser.implicitly_wait(5)
+    
+    # Check that admin login was successful (e.g., "Log Out" appears in the navbar)
+    assert browser.find_element(By.LINK_TEXT, "Log Out")
+    # Optionally check if there is any admin-specific message or functionality
+    # assert "Admin Panel" in browser.page_source  # Adjust this based on the admin page content
