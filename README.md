@@ -12,5 +12,5 @@ Detectando el mismo día del registro los marcajes duplicados, falta de marcaje 
 ---
 ### Carpetas:
 
-* Documentación: Historial de propuestas, respuestas de clientes, diagramas, y definiciones en forma de PDF's
+* Documentación: Historial de propuestas, respuestas de clientes, diagramas, definiciones, y cartas Gantt de desarrollo y entregas en forma de PDF's
 * Plantilla: plantilla Flask usada para montar proyecto, test_env se usa para probar como dockerizar con postgres en vez de sqlite3.
