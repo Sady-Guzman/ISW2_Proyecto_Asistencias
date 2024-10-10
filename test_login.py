@@ -23,33 +23,58 @@ def test_user_login(browser):
     username_input = browser.find_element(By.NAME, "username")
     password_input = browser.find_element(By.NAME, "password")
 
-    username_input.send_keys("testuser") # usuario creado a mano para test
-    password_input.send_keys("123") # contrasena creada a mano para test
+    username_input.send_keys("testuser")
+    password_input.send_keys("123")
     password_input.send_keys(Keys.RETURN)
 
     browser.implicitly_wait(5)
     
-    # Check that login was successful (e.g., "Log Out" appears in the navbar)
-    # assert browser.find_element(By.LINK_TEXT, "Log Out")
+    assert browser.find_element(By.LINK_TEXT, "Log Out")
     # assert "Welcome" in browser.page_source
 
-def test_admin_login(browser):
-    # Navigate to the admin login page
-    browser.get("http://flask_app:5000/adlogin")
+def test_invalid_user_login(browser):
+    browser.get("http://flask_app:5000/login")
 
-    # Locate the username and password fields by their "name" attributes
     username_input = browser.find_element(By.NAME, "username")
     password_input = browser.find_element(By.NAME, "password")
 
-    # Enter the admin credentials
-    username_input.send_keys("admin") # Cuenta unica de admin
+    username_input.send_keys("wronguser")
+    password_input.send_keys("wrongpassword")
+    password_input.send_keys(Keys.RETURN)
+
+    browser.implicitly_wait(5)
+
+    # Check that login failed (you might check for an error message or verify the user stays on the login page)
+    assert "Invalid credentials" in browser.page_source  # Assuming there's an error message for invalid login
+    assert "CleanSys: Login" in browser.title  # Verify still on login page
+
+def test_admin_login(browser):
+    browser.get("http://flask_app:5000/adlogin")
+
+    username_input = browser.find_element(By.NAME, "username")
+    password_input = browser.find_element(By.NAME, "password")
+
+    username_input.send_keys("admin")
     password_input.send_keys("domino")
     password_input.send_keys(Keys.RETURN)
 
-    # Wait for the page to load after login
     browser.implicitly_wait(5)
     
-    # Check that admin login was successful (e.g., "Log Out" appears in the navbar)
     assert browser.find_element(By.LINK_TEXT, "Log Out")
-    # Optionally check if there is any admin-specific message or functionality
-    # assert "Admin Panel" in browser.page_source  # Adjust this based on the admin page content
+    assert "Crear cuenta" in browser.page_source  # Adjust based on your admin page
+
+def test_invalid_admin_login(browser):
+    browser.get("http://flask_app:5000/adlogin")
+
+    username_input = browser.find_element(By.NAME, "username")
+    password_input = browser.find_element(By.NAME, "password")
+
+    username_input.send_keys("notadmin")
+    password_input.send_keys("wrongpassword")
+    password_input.send_keys(Keys.RETURN)
+
+    browser.implicitly_wait(5)
+
+    # Check that login failed for admin
+    assert "Invalid credentials" in browser.page_source  # Assuming there's an error message for admin
+    assert "CleanSys: Admin Login" in browser.title  # Verify still on login page

@@ -23,3 +23,10 @@ docker-compose exec db psql -U postgres -d postgres
 \d 'nombre_tabla' -> equivalente a .schema en sqlite3
 \q -> quit
 SELECT * FROM users;
+
+
+# TESTING
+
+build compose: docker compose up --build
+start testing (test and selenium containers): docker compose --profile testing up 
+or docker compose --profile testing up test (en caso de no necesitar selenium)

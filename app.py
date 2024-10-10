@@ -57,13 +57,19 @@ def login():
 
     if request.method == "POST":
         if not request.form.get("username"):
-            return apology("must provide username", 403)
+            # return apology("must provide username", 403)
+            flash("Invalid credentials. Please provide a username.", "error")
+            return render_template("login.html")
         
         if request.form.get("username") == "admin":
-            return apology("Reserved username", 403)
+            # return apology("Reserved username", 403)
+            flash("Invalid credentials. Reserved username, try with other username.", "error")
+            return render_template("login.html")
 
         if not request.form.get("password"):
-            return apology("must provide password", 403)
+            # return apology("must provide password", 403)
+            flash("Invalid credentials. Must provide password.", "error")
+            return render_template("login.html")
 
         db = get_db()
         cursor = db.cursor()
@@ -72,7 +78,9 @@ def login():
         db.close()
 
         if len(rows) != 1 or not check_password_hash(rows[0][2], request.form.get("password")):
-            return apology("invalid username/password", 403)
+            # return apology("invalid username/password", 403)
+            flash("Invalid credentials. Invalid username or password.", "error")
+            return render_template("login.html")
 
         session["user_id"] = rows[0][0]
         
@@ -95,13 +103,19 @@ def adlogin():
 
     if request.method == "POST":
         if not request.form.get("username"):
-            return apology("must provide admin username", 403)
+            # return apology("must provide admin username", 403)
+            flash("Invalid credentials. Please provide username.", "error")
+            return render_template("adlogin.html")
         
         if request.form.get("username") != "admin":
-            return apology("Invalid ADMIN user", 403)
+            # return apology("Invalid ADMIN user", 403)
+            flash("Invalid credentials. Please use an admin account.", "error")
+            return render_template("adlogin.html")
 
         if not request.form.get("password"):
-            return apology("must provide admin password", 403)
+            # return apology("must provide admin password", 403)
+            flash("Invalid credentials. Please provide a password.", "error")
+            return render_template("adlogin.html")
 
         db = get_db()
         cursor = db.cursor()
@@ -110,7 +124,9 @@ def adlogin():
         db.close()
 
         if len(rows) != 1 or not check_password_hash(rows[0][2], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
+            # return apology("invalid username and/or password", 403)
+            flash("Invalid credentials. Invalid username/password.", "error")
+            return render_template("adlogin.html")
 
         session["user_id"] = rows[0][0]
         
