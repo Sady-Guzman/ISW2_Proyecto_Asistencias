@@ -66,7 +66,7 @@ def test_admin_login(browser):
 def test_invalid_admin_login(browser):
     browser.get("http://flask_app:5000/adlogin")
 
-    username_input = browser.find_element(By.NAME, "username")
+    username_input = browser.find_element(By.NAME, "usernamtee")
     password_input = browser.find_element(By.NAME, "password")
 
     username_input.send_keys("notadmin")
