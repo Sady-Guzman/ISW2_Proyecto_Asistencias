@@ -1,4 +1,4 @@
-version: "3.8"
+# version: "3.8"
 
 services:
   flask_app:
@@ -38,8 +38,8 @@ services:
       - db
     volumes:
       - /dev/shm:/dev/shm
-    # profiles:
-    #   - testing  # Add a profile to ensure it only runs when specified
+    profiles:
+      - testing  # Add a profile to ensure it only runs when specified
 
   test:
     build:

@@ -91,7 +91,7 @@ def login():
         rows = cursor.fetchall()
         db.close()
 
-        if len(rows) != 1 or not check_password_hash(rows[0][2], request.form.get("password")):
+        if len(rows) != 1 or not check_password_hash(rows[0][3], request.form.get("password")):
             # return apology("invalid username/password", 403)
             flash("Invalid credentials. Invalid username or password.", "error")
             return render_template("login.html")
@@ -138,7 +138,7 @@ def adlogin():
         rows = cursor.fetchall()
         db.close()
 
-        if len(rows) != 1 or not check_password_hash(rows[0][2], request.form.get("password")):
+        if len(rows) != 1 or not check_password_hash(rows[0][3], request.form.get("password")):
             # return apology("invalid username and/or password", 403)
             flash("Invalid credentials. Invalid username/password.", "error")
             return render_template("adlogin.html")
@@ -177,6 +177,16 @@ def register():
     else:
         # In case of POST method, Register new user
 
+        rut_input = request.form.get("rut")
+
+        # Ensure RUT was submitted
+        if not request.form.get("rut"):
+            return apology("must provide rut", 400)
+        
+        if len(rut_input) > 10 or len(rut_input) < 9 or '.' in rut_input or '-' not in rut_input:
+            flash("RUT no puede tener puntos y debe tener guion.", "error")
+            return render_template("register.html") 
+        
         # Ensure username was submitted
         if not request.form.get("username"):
             return apology("must provide username", 400)
@@ -194,7 +204,7 @@ def register():
             return apology("password fields don't match", 400)
 
         # SQL Logic
-        db = get_db()  # Assuming you have a function to get the database connection
+        db = get_db()
         cursor = db.cursor()
 
         # Query database for username
@@ -203,11 +213,11 @@ def register():
 
         # Ensure username is not already taken
         if len(rows) != 0:
-            return apology("Username is already taken", 400)
+            return apology("Nombre de usuario ya esta en uso", 400)
         else:
-            # In case everything is OK, register the new user and the hashed password into the DB
-            cursor.execute("INSERT INTO users (username, hash) VALUES (%s, %s)", 
-                           (request.form.get("username"), generate_password_hash(request.form.get("password"))))
+            # In case everything is OK, register the new user, rut, and the hashed password into the DB
+            cursor.execute("INSERT INTO users (rut, username, hash) VALUES (%s, %s, %s)", 
+                           (request.form.get("rut"), request.form.get("username"), generate_password_hash(request.form.get("password"))))
             db.commit()  # Commit the transaction to save changes
 
         cursor.close()  # Close the cursor
@@ -275,9 +285,9 @@ def view_accounts():
     db = get_db()  # Assuming you have a function to get the database connection
     cursor = db.cursor()
 
-    # Fetch all users from the database
-    cursor.execute("SELECT username FROM users")
-    users = cursor.fetchall()  # This will return a list of tuples (username, created_at)
+    # Fetch both rut and username from the database
+    cursor.execute("SELECT id, rut, username FROM users")
+    users = cursor.fetchall()  # This will return a list of tuples (rut, username)
 
     cursor.close()  # Close the cursor
     db.close()  # Close the database connection

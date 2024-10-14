@@ -9,6 +9,8 @@
         <table class="table table-striped">
             <thead>
                 <tr>
+                    <th class="text-start">ID de usuario</th>
+                    <th class="text-start">RUT de usuario</th>
                     <th class="text-start">Nombre de usuario</th>
                 </tr>
             </thead>
@@ -16,7 +18,9 @@
                 <!-- JINJA FOR LOOP to build the table rows dynamically -->
                 {% for user in users %}
                     <tr>
-                        <td class="text-start">{{ user[0] }}</td>
+                        <td class="text-start">{{ user[0] }}</td> <!-- Display id -->
+                        <td class="text-start">{{ user[1] }}</td> <!-- Display rut -->
+                        <td class="text-start">{{ user[2] }}</td> <!-- Display username -->
                     </tr>
                 {% endfor %}
             </tbody>
