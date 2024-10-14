@@ -151,6 +151,7 @@ def logout():
 
 
 @app.route("/register", methods=["GET", "POST"])
+@login_required
 def register():
     """Register new user"""
 
@@ -201,6 +202,7 @@ def register():
 
 
 @app.route("/change_password", methods=["GET", "POST"])
+@login_required
 def change_password():
     """Change the password of a specified user"""
     
@@ -250,6 +252,7 @@ def change_password():
 
 
 @app.route("/view_accounts")
+@login_required
 def view_accounts():
     """View all user accounts"""
 
