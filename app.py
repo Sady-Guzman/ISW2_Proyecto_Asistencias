@@ -98,12 +98,13 @@ def login():
 
         session["user_id"] = rows[0][0]
         
-        # Hardcoded check for admin user
-        if rows[0][0] == 1:  # Replace 1 with the actual hardcoded admin user ID
-            session["is_admin"] = True
-        else:
-            session["is_admin"] = False
-            
+        # # Hardcoded check for admin user
+        # if rows[0][0] == 1:  # Replace 1 with the actual hardcoded admin user ID
+        #     session["is_admin"] = True
+        # else:
+        #     session["is_admin"] = False
+        
+        session["is_admin"] = False
         
         return redirect("/")
 
