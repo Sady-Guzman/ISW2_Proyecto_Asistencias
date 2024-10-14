@@ -3,6 +3,7 @@ import psycopg2
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
+from functools import wraps  # Add this import at the top of the file
 
 # Configure application
 app = Flask(__name__)
@@ -35,13 +36,26 @@ def apology(message, code=400):
     """Render message as an apology to user."""
     return render_template("apology.html", top=code, bottom=message), code
 
-def login_required(f):
+def user_login_required(f):
     """Decorator to require login for a view."""
-    def decorated_function(*args, **kwargs):
+    @wraps(f)  # Use wraps to preserve the original function's name
+    def wrapped_function(*args, **kwargs):
         if "user_id" not in session:
             return redirect("/login")
         return f(*args, **kwargs)
-    return decorated_function
+    return wrapped_function
+
+
+
+def admin_login_required(f):
+    """Decorator to require admin login for a view."""
+    @wraps(f)  # Use wraps to preserve the original function's name
+    def wrapped_admin_function(*args, **kwargs):
+        # Safely check if "user_id" and "is_admin" exist in session
+        if "user_id" not in session or not session.get("is_admin", False):
+            return redirect("/adlogin")
+        return f(*args, **kwargs)
+    return wrapped_admin_function
 
 @app.route("/")
 # @login_required
@@ -127,14 +141,15 @@ def adlogin():
             # return apology("invalid username and/or password", 403)
             flash("Invalid credentials. Invalid username/password.", "error")
             return render_template("adlogin.html")
-
+        
+        session['is_admin'] = True  # or False for normal users
         session["user_id"] = rows[0][0]
         
-        # Hardcoded check for admin user
-        if rows[0][0] == 1:  # Replace 1 with the actual hardcoded admin user ID
-            session["is_admin"] = True
-        else:
-            session["is_admin"] = False
+        # # Hardcoded check for admin user
+        # if rows[0][0] == 1:  # Replace 1 with the actual hardcoded admin user ID
+        #     session["is_admin"] = True
+        # else:
+        #     session["is_admin"] = False
             
         return redirect("/")
 
@@ -151,7 +166,7 @@ def logout():
 
 
 @app.route("/register", methods=["GET", "POST"])
-@login_required
+@admin_login_required
 def register():
     """Register new user"""
 
@@ -202,7 +217,7 @@ def register():
 
 
 @app.route("/change_password", methods=["GET", "POST"])
-@login_required
+@admin_login_required
 def change_password():
     """Change the password of a specified user"""
     
@@ -252,7 +267,7 @@ def change_password():
 
 
 @app.route("/view_accounts")
-@login_required
+@admin_login_required
 def view_accounts():
     """View all user accounts"""
 
