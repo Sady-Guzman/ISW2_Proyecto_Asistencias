@@ -1,14 +1,19 @@
-version: "3.8"  # Use a more recent version
+version: "3.8"
 
 services:
   flask_app:
-    build: .
+    # build: .  # Build the Flask app
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "5000:5000"
     environment:
       - DATABASE_URL=postgresql://postgres:domino@db:5432/postgres  # Use service name 'db' for PostgreSQL
     depends_on:
       - db
+    # profiles:
+    #   - testing
 
   db:
     image: postgres:latest
@@ -21,6 +26,36 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persist PostgreSQL data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Run init.sql on startup
+    # profiles:
+    #   - testing
+
+  selenium:
+    image: selenium/standalone-chrome:4.1.0
+    ports:
+      - "4444:4444"
+    depends_on:
+      - flask_app
+      - db
+    volumes:
+      - /dev/shm:/dev/shm
+    # profiles:
+    #   - testing  # Add a profile to ensure it only runs when specified
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test  # Specify the test Dockerfile
+    command: pytest # Only runs when test container is invoked
+    depends_on:
+      - flask_app
+      - selenium
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:domino@db:5432/test_db
+    volumes:
+      - .:/app
+    profiles:
+      - testing  # Add a profile to ensure it only runs when specified
 
 volumes:
   postgres_data:

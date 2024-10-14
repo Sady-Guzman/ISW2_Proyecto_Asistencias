@@ -3,6 +3,7 @@ import psycopg2
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
+from functools import wraps  # Add this import at the top of the file
 
 # Configure application
 app = Flask(__name__)
@@ -35,13 +36,26 @@ def apology(message, code=400):
     """Render message as an apology to user."""
     return render_template("apology.html", top=code, bottom=message), code
 
-def login_required(f):
+def user_login_required(f):
     """Decorator to require login for a view."""
-    def decorated_function(*args, **kwargs):
+    @wraps(f)  # Use wraps to preserve the original function's name
+    def wrapped_function(*args, **kwargs):
         if "user_id" not in session:
             return redirect("/login")
         return f(*args, **kwargs)
-    return decorated_function
+    return wrapped_function
+
+
+
+def admin_login_required(f):
+    """Decorator to require admin login for a view."""
+    @wraps(f)  # Use wraps to preserve the original function's name
+    def wrapped_admin_function(*args, **kwargs):
+        # Safely check if "user_id" and "is_admin" exist in session
+        if "user_id" not in session or not session.get("is_admin", False):
+            return redirect("/adlogin")
+        return f(*args, **kwargs)
+    return wrapped_admin_function
 
 @app.route("/")
 # @login_required
@@ -57,13 +71,19 @@ def login():
 
     if request.method == "POST":
         if not request.form.get("username"):
-            return apology("must provide username", 403)
+            # return apology("must provide username", 403)
+            flash("Invalid credentials. Please provide a username.", "error")
+            return render_template("login.html")
         
         if request.form.get("username") == "admin":
-            return apology("Reserved username", 403)
+            # return apology("Reserved username", 403)
+            flash("Invalid credentials. Reserved username, try with other username.", "error")
+            return render_template("login.html")
 
         if not request.form.get("password"):
-            return apology("must provide password", 403)
+            # return apology("must provide password", 403)
+            flash("Invalid credentials. Must provide password.", "error")
+            return render_template("login.html")
 
         db = get_db()
         cursor = db.cursor()
@@ -72,16 +92,19 @@ def login():
         db.close()
 
         if len(rows) != 1 or not check_password_hash(rows[0][2], request.form.get("password")):
-            return apology("invalid username/password", 403)
+            # return apology("invalid username/password", 403)
+            flash("Invalid credentials. Invalid username or password.", "error")
+            return render_template("login.html")
 
         session["user_id"] = rows[0][0]
         
-        # Hardcoded check for admin user
-        if rows[0][0] == 1:  # Replace 1 with the actual hardcoded admin user ID
-            session["is_admin"] = True
-        else:
-            session["is_admin"] = False
-            
+        # # Hardcoded check for admin user
+        # if rows[0][0] == 1:  # Replace 1 with the actual hardcoded admin user ID
+        #     session["is_admin"] = True
+        # else:
+        #     session["is_admin"] = False
+        
+        session["is_admin"] = False
         
         return redirect("/")
 
@@ -95,13 +118,19 @@ def adlogin():
 
     if request.method == "POST":
         if not request.form.get("username"):
-            return apology("must provide admin username", 403)
+            # return apology("must provide admin username", 403)
+            flash("Invalid credentials. Please provide username.", "error")
+            return render_template("adlogin.html")
         
         if request.form.get("username") != "admin":
-            return apology("Invalid ADMIN user", 403)
+            # return apology("Invalid ADMIN user", 403)
+            flash("Invalid credentials. Please use an admin account.", "error")
+            return render_template("adlogin.html")
 
         if not request.form.get("password"):
-            return apology("must provide admin password", 403)
+            # return apology("must provide admin password", 403)
+            flash("Invalid credentials. Please provide a password.", "error")
+            return render_template("adlogin.html")
 
         db = get_db()
         cursor = db.cursor()
@@ -110,15 +139,18 @@ def adlogin():
         db.close()
 
         if len(rows) != 1 or not check_password_hash(rows[0][2], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
-
+            # return apology("invalid username and/or password", 403)
+            flash("Invalid credentials. Invalid username/password.", "error")
+            return render_template("adlogin.html")
+        
+        session['is_admin'] = True  # or False for normal users
         session["user_id"] = rows[0][0]
         
-        # Hardcoded check for admin user
-        if rows[0][0] == 1:  # Replace 1 with the actual hardcoded admin user ID
-            session["is_admin"] = True
-        else:
-            session["is_admin"] = False
+        # # Hardcoded check for admin user
+        # if rows[0][0] == 1:  # Replace 1 with the actual hardcoded admin user ID
+        #     session["is_admin"] = True
+        # else:
+        #     session["is_admin"] = False
             
         return redirect("/")
 
@@ -135,6 +167,7 @@ def logout():
 
 
 @app.route("/register", methods=["GET", "POST"])
+@admin_login_required
 def register():
     """Register new user"""
 
@@ -185,6 +218,7 @@ def register():
 
 
 @app.route("/change_password", methods=["GET", "POST"])
+@admin_login_required
 def change_password():
     """Change the password of a specified user"""
     
@@ -234,6 +268,7 @@ def change_password():
 
 
 @app.route("/view_accounts")
+@admin_login_required
 def view_accounts():
     """View all user accounts"""
 

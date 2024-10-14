@@ -23,3 +23,12 @@ docker-compose exec db psql -U postgres -d postgres
 \d 'nombre_tabla' -> equivalente a .schema en sqlite3
 \q -> quit
 SELECT * FROM users;
+
+
+# TESTING
+
+build compose: docker compose up --build
+start testing containers: docker-compose --profile testing up --build 
+
+* buscar forma de no necesitar selenium en containers que se ejecutan por defecto, La idea es agregarlo a perfil de testing.
+    Por ahora hacer esto resulta en fallo de pruebas
