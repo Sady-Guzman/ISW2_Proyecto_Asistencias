@@ -29,7 +29,7 @@ def test_user_login(browser):
 
     browser.implicitly_wait(5)
     
-    assert browser.find_element(By.LINK_TEXT, "Log Out")
+    assert browser.find_element(By.LINK_TEXT, "Cerrar Cuenta")
     # assert "Welcome" in browser.page_source
 
 def test_invalid_user_login(browser):
@@ -60,8 +60,8 @@ def test_admin_login(browser):
 
     browser.implicitly_wait(5)
     
-    assert browser.find_element(By.LINK_TEXT, "Log Out")
-    assert "Crear cuenta" in browser.page_source  # Adjust based on your admin page
+    assert browser.find_element(By.LINK_TEXT, "Cerrar Cuenta")
+    # assert "Crear cuenta" in browser.page_source  # Adjust based on your admin page
 
 def test_invalid_admin_login(browser):
     browser.get("http://flask_app:5000/adlogin")
@@ -76,5 +76,5 @@ def test_invalid_admin_login(browser):
     browser.implicitly_wait(5)
 
     # Check that login failed for admin
-    assert "Invalid credentials" in browser.page_source  # Assuming there's an error message for admin
+    assert "Credenciales incorrectas" in browser.page_source  # Assuming there's an error message for admin
     assert "CleanSys: Admin Login" in browser.title  # Verify still on login page

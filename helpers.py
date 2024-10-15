@@ -28,7 +28,7 @@ def apology(message, code=400):
 
     return render_template("apology.html", top=code, bottom=escape(message)), code
 
-
+# Descontinuado, Ahora existe version independiente para admin y usuario
 def login_required(f):
     """
     Decorate routes to require login.
@@ -63,7 +63,23 @@ def login_required(f):
 #         print(f"Data parsing error: {e}")
 #     return None
 
-
 # def usd(value):
 #     """Format value as USD."""
 #     return f"${value:,.2f}"
+
+
+def format_rut(rut):
+    # Split the RUT into the number part and the verifier digit
+    number_part, verifier_digit = rut.split('-')
+
+    # Reverse the number part for easier formatting
+    number_part = number_part[::-1]
+
+    # Add periods every 3 digits
+    formatted_number = '.'.join([number_part[i:i+3] for i in range(0, len(number_part), 3)])
+
+    # Reverse it back to its original order
+    formatted_number = formatted_number[::-1]
+
+    # Return the formatted RUT
+    return f"{formatted_number}-{verifier_digit}"
