@@ -7,26 +7,26 @@ from functools import wraps
 def apology(message, code=400):
     """Render message as an apology to user."""
 
-    def escape(s):
-        """
-        Escape special characters.
+    # def escape(s):
+    #     """
+    #     Escape special characters.
 
-        https://github.com/jacebrowning/memegen#special-characters
-        """
-        for old, new in [
-            ("-", "--"),
-            (" ", "-"),
-            ("_", "__"),
-            ("?", "~q"),
-            ("%", "~p"),
-            ("#", "~h"),
-            ("/", "~s"),
-            ('"', "''"),
-        ]:
-            s = s.replace(old, new)
-        return s
+    #     https://github.com/jacebrowning/memegen#special-characters
+    #     """
+    #     for old, new in [
+    #         ("-", "--"),
+    #         (" ", "-"),
+    #         ("_", "__"),
+    #         ("?", "~q"),
+    #         ("%", "~p"),
+    #         ("#", "~h"),
+    #         ("/", "~s"),
+    #         ('"', "''"),
+    #     ]:
+    #         s = s.replace(old, new)
+    #     return s
 
-    return render_template("apology.html", top=code, bottom=escape(message)), code
+    return render_template("apology.html")
 
 # Descontinuado, Ahora existe version independiente para admin y usuario
 def login_required(f):
@@ -45,27 +45,24 @@ def login_required(f):
     return decorated_function
 
 
-# def lookup(symbol):
-#     """Look up quote for symbol."""
-#     url = f"https://finance.cs50.io/quote?symbol={symbol.upper()}"
-#     try:
-#         response = requests.get(url)
-#         response.raise_for_status()  # Raise an error for HTTP error responses
-#         quote_data = response.json()
-#         return {
-#             "name": quote_data["companyName"],
-#             "price": quote_data["latestPrice"],
-#             "symbol": symbol.upper()
-#         }
-#     except requests.RequestException as e:
-#         print(f"Request error: {e}")
-#     except (KeyError, ValueError) as e:
-#         print(f"Data parsing error: {e}")
-#     return None
 
-# def usd(value):
-#     """Format value as USD."""
-#     return f"${value:,.2f}"
+def user_login_required(f):
+    """Decorator to require login for a user."""
+    @wraps(f)
+    def wrapped_function(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect("/login")
+        return f(*args, **kwargs)
+    return wrapped_function
+
+def admin_login_required(f):
+    """Decorator to require admin login for a view."""
+    @wraps(f)
+    def wrapped_admin_function(*args, **kwargs):
+        if "user_id" not in session or not session.get("is_admin", False):
+            return redirect("/adlogin")
+        return f(*args, **kwargs)
+    return wrapped_admin_function
 
 
 def format_rut(rut):
