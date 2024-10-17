@@ -2,6 +2,7 @@ from flask import Flask, render_template
 from flask_session import Session
 from session_routes import app as session_routes
 from manejo_cuentas import app as manejo_cuentas
+from carga_archivo import app as carga_archivo
 
 app = Flask(__name__)
 
@@ -20,12 +21,14 @@ def after_request(response):
 
 @app.route("/")
 def index():
-    """Show portfolio of stocks"""
-    return render_template("apology.html")
+    """Show index"""
+    # Dejar vacio o poner informacin?
+    return render_template("index.html")
 
 # Import other apps (blueprints)
 app.register_blueprint(session_routes)
 app.register_blueprint(manejo_cuentas)
+app.register_blueprint(carga_archivo)
 
 if __name__ == "__main__":
     app.run()
