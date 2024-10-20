@@ -29,6 +29,11 @@ para salir: control+D OR 'exit'
 SELECT * FROM users;
 
 
+#APP container bash
+docker-compose exec -it flask_app /bin/bash
+
+
+
 # TESTING
 
 build compose: docker compose up --build
