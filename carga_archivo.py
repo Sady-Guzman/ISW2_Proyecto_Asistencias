@@ -17,16 +17,20 @@ def carga_archivo_func():
     else:
         # Comprueba archivo
         if 'file' not in request.files:
-            flash('No file part')
+            flash('No se detecta archivo', "error")
             return redirect(request.url)
         
         file = request.files['file']
             
         if file.filename == '':
-            flash('No selected file')
+            flash('No se detecta archivo', "error")
             return redirect(request.url)
         
-        # Comprobar tambien por extension '.log' y contenido tabular
+        # Comprobar tambien por extension '.log'
+        # y contenido tabular ???
+        if not file.filename.endswith('.log'):
+            flash('Tipo de archivo invalido, Intente nuevamente con un archivo tipo .log', "error")
+            return redirect(request.url)
         
         # werkzeug sanitiza nombre archivo
         filename = secure_filename(file.filename)
