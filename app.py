@@ -1,14 +1,18 @@
 from flask import Flask, render_template
 from flask_session import Session
-from session_routes import app as session_routes
-from manejo_cuentas import app as manejo_cuentas
-from carga_archivo import app as carga_archivo
+from session_routes import session_routes
+from manejo_cuentas import manejo_cuentas
+from carga_archivo import carga_archivo
+import os
 
 app = Flask(__name__)
+app.config['DEBUG'] = True
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+# app.config['UPLOAD_FOLDER'] = 'temp'
+app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'temp')  # or an absolute path
 Session(app)
 
 @app.after_request

@@ -5,9 +5,10 @@ from werkzeug.security import generate_password_hash
 from flask import Blueprint, render_template, request, session, redirect, flash
 from db import get_db  # Import from db.py
 
-app = Blueprint('manejo_cuentas', __name__)
+# app = Blueprint('manejo_cuentas', __name__)
+manejo_cuentas = Blueprint('manejo_cuentas', __name__)
 
-@app.route("/register", methods=["GET", "POST"])
+@manejo_cuentas.route("/register", methods=["GET", "POST"])
 @admin_login_required
 def register():
     """Register new user"""
@@ -76,7 +77,7 @@ def register():
         # Redirect user to login form
         return redirect("/")
 
-@app.route("/change_password", methods=["GET", "POST"])
+@manejo_cuentas.route("/change_password", methods=["GET", "POST"])
 @admin_login_required
 def change_password():
     """Change password of a specified user"""
@@ -132,7 +133,7 @@ def change_password():
         # Redirect user after changing the password
         return redirect("/")
 
-@app.route("/view_accounts")
+@manejo_cuentas.route("/view_accounts")
 @admin_login_required
 def view_accounts():
     """View all user accounts"""

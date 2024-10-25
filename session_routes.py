@@ -5,9 +5,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask import Blueprint, render_template, request, session, redirect, flash
 from db import get_db  # Import from db.py
 
-app = Blueprint('session_routes', __name__)
+# app = Blueprint('session_routes', __name__)
+session_routes = Blueprint('session_routes', __name__)
 
-@app.route("/login", methods=["GET", "POST"])
+@session_routes.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
     
@@ -49,7 +50,7 @@ def login():
     else:
         return render_template("login.html")
 
-@app.route("/adlogin", methods=["GET", "POST"])
+@session_routes.route("/adlogin", methods=["GET", "POST"])
 def admin_login():
     """Log admin in"""
     
@@ -91,7 +92,7 @@ def admin_login():
     else:
         return render_template("adlogin.html")
 
-@app.route("/logout")
+@session_routes.route("/logout")
 def logout():
     """Log user out"""
     session.clear()

@@ -18,6 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install PostgreSQL dependencies
 RUN apt-get update && apt-get install -y libpq-dev
 
+# Create the upload directory and set permissions
+RUN mkdir -p /app/temp && chmod -R 755 /app/temp
+
 # Copy the rest of your application code
 COPY . .
 
