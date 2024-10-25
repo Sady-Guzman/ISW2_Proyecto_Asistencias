@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, session, flash, redirect, Blu
 from helpers import user_login_required
 import os
 from werkzeug.utils import secure_filename
+from depuracion import depurar_archivo  # funcion de depuracion de depuracion.py. Redirige a varios pasos de depuracion distintos
 
 
 carga_archivo = Blueprint('carga_archivo', __name__)
@@ -59,8 +60,14 @@ def carga_archivo_func():
         with open(file_path, 'rb') as f:
             file_content = f.read()
 
-        # Redirigir a siguiente modulo 'depuracion'
-        # TODO
+        # LLama funcion de depuracion principal. Desde esta funcion de manejan varios tipos de depuracion
+        processed_file_path = depurar_archivo(file_path)
 
-        # render  siguiente modulo 'visualizar.html'. TODO
-        return render_template("apology.html") # Por ahora
+        if processed_file_path:
+                # flash('Archivo depurado correctamente')
+                # return render_template("visualizar.html", file_path=processed_file_path)
+            flash('Funcion de depuracion en construccion', "error")
+            return render_template('apology.html')
+        else:
+            flash('Error en la depuración del archivo', "error")
+            return render_template("apology.html")
