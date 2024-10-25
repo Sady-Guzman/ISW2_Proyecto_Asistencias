@@ -6,6 +6,7 @@ from carga_archivo import carga_archivo
 import os
 
 app = Flask(__name__)
+app.config['DEBUG'] = True
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False

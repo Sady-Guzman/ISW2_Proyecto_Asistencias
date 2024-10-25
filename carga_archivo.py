@@ -37,9 +37,18 @@ def carga_archivo_func():
         
         # Guarda archivo
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        flash('Archivo correctamente importado')
+        # file.save(file_path)
+
+
+        try:
+            file.save(file_path)
+        except Exception as e:
+            print(f"Error saving file: {e}")
+            flash('Error al subir archivo', "error")   
+            return render_template("apology.html") # Por ahora
+            
         
+        flash('Archivo correctamente importado')
         # Debug
         print(f"File saved to: {file_path}")
         # Para verlo dentro de container
