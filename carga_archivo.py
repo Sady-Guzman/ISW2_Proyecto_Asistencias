@@ -35,10 +35,8 @@ def carga_archivo_func():
         # werkzeug sanitiza nombre archivo
         filename = secure_filename(file.filename)
         
-        # Guarda archivo
+        # Guarda archivo en file_path 
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-        # file.save(file_path)
-
 
         try:
             file.save(file_path)
