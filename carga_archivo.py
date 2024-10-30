@@ -3,7 +3,7 @@ from helpers import user_login_required
 import os
 from werkzeug.utils import secure_filename
 from depuracion import depurar_archivo  # funcion de depuracion de depuracion.py. Redirige a varios pasos de depuracion distintos
-
+from visualizacion import visualizar # Busca y muestra archivo
 
 carga_archivo = Blueprint('carga_archivo', __name__)
 
@@ -34,7 +34,8 @@ def carga_archivo_func():
             return redirect(request.url)
         
         # werkzeug sanitiza nombre archivo
-        filename = secure_filename(file.filename)
+        # filename = secure_filename(file.filename)
+        filename = 'marcajes_original.log'
         
         # Guarda archivo en file_path 
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
@@ -64,10 +65,8 @@ def carga_archivo_func():
         processed_file_path = depurar_archivo(file_path)
 
         if processed_file_path:
-                # flash('Archivo depurado correctamente')
-                # return render_template("visualizar.html", file_path=processed_file_path)
-            flash('Funcion de depuracion en construccion', "error")
-            return render_template('apology.html')
+                flash('Archivo depurado correctamente')
+                return redirect('/visualizacion')
         else:
             flash('Error en la depuración del archivo', "error")
             return render_template("apology.html")
