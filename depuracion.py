@@ -52,18 +52,43 @@ def duplicados(marcaje):
             # Revisa si no existe ninguna entrada duplicada
             if (fila_actual['entrada/salida'] == 1 and fila_siguiente['entrada/salida'] == 1 and ultima_accion != 3):
 
-                # Marcar entrda duplicada y arreglar
+                # Marcar entrada duplicada
                 entrada.loc[group.index[i + 1], 'Error'] = 'Entrada duplicada'
 
             elif (fila_actual['entrada/salida'] == 3 and fila_siguiente['entrada/salida'] == 3 and ultima_accion != 1):
+                
+                # Marcar salida duplicada
                 entrada.loc[group.index[i + 1], 'Error'] = 'Salida duplicada'
                 
             
             ultima_accion = fila_actual['entrada/salida']
 
-    # Se procede a arreglar (todavía no lo hago)
             
     entrada = entrada.sort_values(by='Hora').reset_index(drop=True)
+
+    nuevoDf = []
+
+    for i, row in entrada.iterrows():
+            
+            # Agregar la fila actual
+            nuevoDf.append(row)  
+
+            if row['Error'] == 'Entrada duplicada':
+
+                # Crear una fila de "salida creada por duplicado" con los mismos datos
+                salida_row = row.copy()
+                salida_row['entrada/salida'] = 3  # Cambiar a salida
+                salida_row['Error'] = 'Salida creada por duplicado'
+                nuevoDf.append(salida_row)  # Agregar la nueva fila
+            
+            elif row['Error'] == 'Salida duplicada':
+                # Crear una fila de "entrada creada por duplicado" con los mismos datos
+                entrada_row = row.copy()
+                entrada_row['entrada/salida'] = 1  # Cambiar a entrada
+                entrada_row['Error'] = 'Entrada creada por duplicado'
+                nuevoDf.append(entrada_row)  # Agregar la nueva fila
+
+    entrada = pd.DataFrame(nuevoDf)
 
     return entrada
 
