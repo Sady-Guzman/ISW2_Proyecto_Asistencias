@@ -48,7 +48,7 @@ def carga_archivo_func():
             return render_template("apology.html") # Por ahora
             
         
-        flash('Archivo correctamente importado')
+        # flash('Archivo correctamente importado')
         # Debug
         print(f"File saved to: {file_path}")
         # Para verlo dentro de container
@@ -65,8 +65,8 @@ def carga_archivo_func():
         processed_file_path = depurar_archivo(file_path)
 
         if processed_file_path:
-                flash('Archivo depurado correctamente')
+                # flash('Archivo depurado correctamente')
                 return redirect('/visualizacion')
         else:
-            flash('Error en la depuración del archivo', "error")
+            # flash('Error en la depuración del archivo', "error")
             return render_template("apology.html")
