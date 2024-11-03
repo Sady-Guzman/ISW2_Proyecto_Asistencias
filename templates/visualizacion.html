@@ -41,7 +41,7 @@
 
         <div class="row">
             <!-- Filter Section (smaller column) -->
-            <div class="col-lg-3 filter-sidebar">
+            <div class="col-lg-2 filter-sidebar">
                 <h2>Filtros</h2>
                 <form method="POST" action="{{ url_for('visualizacion.apply_filters') }}">
                     <div class="form-group">
@@ -79,7 +79,7 @@
             </div>
 
             <!-- Table Section (larger column) -->
-            <div class="col-lg-9">
+            <div class="col-lg-10">
                 <div class="scrollable-table">
                     <table class="table table-striped table-bordered">
                         <thead>
@@ -127,7 +127,7 @@
         }
 
         .scrollable-table {
-            max-height: 75vh;
+            max-height: 75vh; /* Reduced height to leave margin at bottom */
             overflow-y: auto;
             background-color: #f9f9f9;
             padding: 1rem;
@@ -137,9 +137,9 @@
         }
 
         .filter-sidebar {
-            max-width: 300px;
+            max-width: 280px;
+            padding-left: 15px;
             border-left: 1px solid #ddd;
-            padding-left: 20px;
         }
     </style>
 </body>
