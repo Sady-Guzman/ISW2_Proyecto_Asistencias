@@ -32,7 +32,7 @@ def depurar_archivo(file_path):
         return None
 
 def duplicados(marcaje):
-    entrada = marcaje[marcaje['entrada/salida'] == 1]
+    entrada = marcaje
 
     # Ordenar por rut y hora
     entrada = entrada.sort_values(by=['rut', 'Hora']).reset_index(drop=True)
@@ -93,7 +93,7 @@ def duplicados(marcaje):
     return entrada
 
 def faltaSalida(marcaje, reglas):
-    salida =  marcaje[marcaje['entrada/salida'] == 3]
+    salida =  marcaje
 
     for  i, row in salida.iterrows():
 
