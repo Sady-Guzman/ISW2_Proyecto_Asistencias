@@ -36,6 +36,10 @@ def carga_archivo_func():
         # werkzeug sanitiza nombre archivo
         # filename = secure_filename(file.filename)
         filename = 'marcajes_original.log'
+
+        # Change the file extension to .csv
+        # PARA USAR JQuery. pendiente ver si se transforma aqui o en MOD Depuracion
+        #csv_filename = filename.replace('.log', '.csv')
         
         # Guarda archivo en file_path 
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)

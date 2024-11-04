@@ -6,8 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <link href="/static/styles.css" rel="stylesheet">
     <title>CleanSys: Visualización de Archivo</title>
@@ -36,6 +39,7 @@
         <div class="row">
             <div class="col-12">
                 <h1 class="mb-4">Contenido del Archivo Subido</h1>
+                <input type="file" id="csvFileInput" accept=".csv" class="form-control" />
             </div>
         </div>
 
@@ -43,62 +47,19 @@
             <!-- Filter Section (smaller column) -->
             <div class="col-lg-2 filter-sidebar">
                 <h2>Filtros</h2>
-                <form method="POST" action="{{ url_for('visualizacion.apply_filters') }}">
-                    <div class="form-group">
-                        <label for="filter-rut">Filtrar por RUT</label>
-                        <input type="text" class="form-control" id="filter-rut" name="filter_rut" placeholder="Ingrese RUT">
-                    </div>
-                    <div class="form-group mt-3">
-                        <label for="from-hour">Hora Desde</label>
-                        <input type="time" class="form-control" id="from-hour" name="from_hour">
-                    </div>
-                    <div class="form-group mt-3">
-                        <label for="to-hour">Hora Hasta</label>
-                        <input type="time" class="form-control" id="to-hour" name="to_hour">
-                    </div>
-                    <div class="form-group mt-3">
-                        <label for="entry-exit">Entrada/Salida</label>
-                        <select class="form-control" id="entry-exit" name="entry_exit">
-                            <option value="any">Cualquiera</option>
-                            <option value="entrada">Entrada</option>
-                            <option value="salida">Salida</option>
-                        </select>
-                    </div>
-                    <div class="form-group mt-3">
-                        <label for="condition">Condición</label>
-                        <select class="form-control" id="condition" name="condition">
-                            <option value="any">Cualquiera</option>
-                            <option value="duplicado">Duplicado</option>
-                            <option value="saltado">Saltado</option>
-                            <option value="correcto">Correcto</option>
-                            <option value="invertir">Invertir</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary mt-4">Aplicar Filtros</button>
-                </form>
+                <!-- Filter form here -->
             </div>
 
             <!-- Table Section (larger column) -->
             <div class="col-lg-10">
                 <div class="scrollable-table">
-                    <table class="table table-striped table-bordered">
+                    <table class="table table-striped table-bordered custom-table">
                         <thead>
-                            <tr>
+                            <tr id="tableHeader">
                                 <th class="checkbox-cell"><input type="checkbox" onclick="toggleAllCheckboxes(this)"></th>
-                                {% for col in table_columns %}
-                                    <th>{{ col }}</th>
-                                {% endfor %}
                             </tr>
                         </thead>
-                        <tbody>
-                            {% for row in table_data %}
-                                <tr>
-                                    <td class="checkbox-cell"><input type="checkbox" class="row-checkbox"></td>
-                                    {% for cell in row %}
-                                        <td>{{ cell }}</td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
+                        <tbody id="csvTableBody">
                         </tbody>
                     </table>
                 </div>
@@ -114,10 +75,57 @@
                 checkbox.checked = source.checked;
             }
         }
+
+        // Read and display CSV file
+        $(document).ready(function() {
+            $('#csvFileInput').on('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const csvText = e.target.result;
+                        displayCSV(csvText);
+                    };
+                    reader.readAsText(file);
+                }
+            });
+
+            function displayCSV(csvText) {
+                const rows = csvText.split("\n");
+                const $tableHeader = $('#tableHeader');
+                const $tableBody = $('#csvTableBody');
+
+                // Clear any previous data
+                $tableHeader.find("th:gt(0)").remove();
+                $tableBody.empty();
+
+                // Parse CSV and populate table
+                rows.forEach((row, rowIndex) => {
+                    const cells = row.split(",");
+                    const $row = $('<tr></tr>');
+
+                    if (rowIndex === 0) {
+                        // Populate header
+                        cells.forEach(cell => {
+                            $tableHeader.append(`<th>${cell.trim()}</th>`);
+                        });
+                    } else {
+                        // Add checkbox cell
+                        $row.append('<td class="checkbox-cell"><input type="checkbox" class="row-checkbox"></td>');
+
+                        // Populate data rows
+                        cells.forEach(cell => {
+                            $row.append(`<td>${cell.trim()}</td>`);
+                        });
+                        $tableBody.append($row);
+                    }
+                });
+            }
+        });
     </script>
 
     <style>
-        /* Styling adjustments to make full use of screen space */
+        /* General table and container styling */
         body {
             overflow-x: hidden;
         }
@@ -127,7 +135,7 @@
         }
 
         .scrollable-table {
-            max-height: 75vh; /* Reduced height to leave margin at bottom */
+            max-height: 75vh;
             overflow-y: auto;
             background-color: #f9f9f9;
             padding: 1rem;
@@ -140,6 +148,17 @@
             max-width: 280px;
             padding-left: 15px;
             border-left: 1px solid #ddd;
+        }
+
+        /* Custom table styling for vertical borders */
+        .custom-table th, .custom-table td {
+            border-right: 1px solid #ddd; /* Vertical border for each column */
+            border-left: 1px solid #ddd;  /* Ensure consistent styling on both sides */
+        }
+
+        /* Adjust rightmost cell to avoid double border */
+        .custom-table th:last-child, .custom-table td:last-child {
+            border-right: none;
         }
     </style>
 </body>
