@@ -37,8 +37,8 @@ def depurar_archivo(file_path):
 def duplicados(marcaje):
     entrada = marcaje
 
-    # Ordenar por rut y hora
-    entrada = entrada.sort_values(by=['rut', 'Hora']).reset_index(drop=True)
+    # Ordenar por rut día y hora
+    entrada = entrada.sort_values(by=['rut', 'día', 'Hora']).reset_index(drop=True)
 
     # Columna de errores
     entrada['Error'] = 'Ok'
@@ -125,7 +125,8 @@ def faltaSalida(marcaje, reglas):
             salida.at[i, 'Hora'] = HorarioSalida      
             salida.at[i, "día"] -= 1    
 
-
+    salida = salida.sort_values(by=['día', 'Hora']).reset_index(drop=True)
+    
     return salida
 
 def marcaOpuesto(marcaje, reglas):
