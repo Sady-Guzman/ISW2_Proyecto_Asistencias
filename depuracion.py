@@ -5,7 +5,10 @@ def depurar_archivo(file_path):
     """Function to clean and process the uploaded .log file."""
     try:
         # Assuming your .log file can be read with Pandas
-        marcaje = pd.read_csv(file_path, header= None, sep=',', usecols=[0, 2, 3, 5, 6], names=["Codigo", "entrada/salida", "rut", "hora", "minuto"])  
+        # marcaje = pd.read_csv(file_path, header= None, sep=',', usecols=[0, 2, 3, 5, 6], names=["Codigo", "entrada/salida", "rut", "hora", "minuto"])  
+
+        marcaje = pd.read_csv("marcajes_08-01-24.log", header= None, sep=',', 
+                      names=["Codigo", "a", "entrada/salida", "rut","b", "hora", "minuto", "día", "mes", "año", "c", "d", "e", "f", "g", "h", "i", "j", "k"])
 
         # Juntar hora y minuto en una solo columna
         marcaje['Hora'] = marcaje['hora'].astype(str).str.zfill(2) + ':' + marcaje['minuto'].astype(str).str.zfill(2)       
@@ -64,7 +67,7 @@ def duplicados(marcaje):
             ultima_accion = fila_actual['entrada/salida']
 
             
-    entrada = entrada.sort_values(by='Hora').reset_index(drop=True)
+    entrada = entrada.sort_values(by=['día', 'Hora']).reset_index(drop=True)
 
     nuevoDf = []
 
@@ -119,7 +122,9 @@ def faltaSalida(marcaje, reglas):
 
             salida.at[i, 'hora'] = horaSalida
             salida.at[i, 'minuto'] = minutoSalida
-            salida.at[i, 'Hora'] = HorarioSalida           
+            salida.at[i, 'Hora'] = HorarioSalida      
+            salida.at[i, "día"] -= 1    
+
 
     return salida
 
