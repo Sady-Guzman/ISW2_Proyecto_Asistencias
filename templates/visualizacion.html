@@ -47,7 +47,39 @@
             <!-- Filter Section (smaller column) -->
             <div class="col-lg-2 filter-sidebar">
                 <h2>Filtros</h2>
-                <!-- Filter form here -->
+                <form method="POST" action="{{ url_for('visualizacion.apply_filters') }}">
+                    <div class="form-group">
+                        <label for="filter-rut">Filtrar por RUT</label>
+                        <input type="text" class="form-control" id="filter-rut" name="filter_rut" placeholder="Ingrese RUT">
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="from-hour">Hora Desde</label>
+                        <input type="time" class="form-control" id="from-hour" name="from_hour">
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="to-hour">Hora Hasta</label>
+                        <input type="time" class="form-control" id="to-hour" name="to_hour">
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="entry-exit">Entrada/Salida</label>
+                        <select class="form-control" id="entry-exit" name="entry_exit">
+                            <option value="any">Cualquiera</option>
+                            <option value="entrada">Entrada</option>
+                            <option value="salida">Salida</option>
+                        </select>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="condition">Condición</label>
+                        <select class="form-control" id="condition" name="condition">
+                            <option value="any">Cualquiera</option>
+                            <option value="duplicado">Duplicado</option>
+                            <option value="saltado">Saltado</option>
+                            <option value="correcto">Correcto</option>
+                            <option value="invertir">Invertir</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-4">Aplicar Filtros</button>
+                </form>
             </div>
 
             <!-- Table Section (larger column) -->

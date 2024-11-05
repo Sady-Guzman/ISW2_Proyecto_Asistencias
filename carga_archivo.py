@@ -28,10 +28,11 @@ def carga_archivo_func():
             return redirect(request.url)
         
         # Comprobar tambien por extension '.log'
-        # y contenido tabular ???
+        '''
         if not file.filename.endswith('.log'):
             flash('Tipo de archivo invalido, Intente nuevamente con un archivo tipo .log', "error")
             return redirect(request.url)
+        '''
         
         # werkzeug sanitiza nombre archivo
         # filename = secure_filename(file.filename)
@@ -62,8 +63,8 @@ def carga_archivo_func():
         
         # EJEMPLO DE MANEJO ARCHIVO
         # Open and process the file from the saved location
-        with open(file_path, 'rb') as f:
-            file_content = f.read()
+        # with open(file_path, 'rb') as f:
+            # file_content = f.read()
 
         # LLama funcion de depuracion principal. Desde esta funcion de manejan varios tipos de depuracion
         processed_file_path = depurar_archivo(file_path)
@@ -72,5 +73,5 @@ def carga_archivo_func():
                 # flash('Archivo depurado correctamente')
                 return redirect('/visualizacion')
         else:
-            # flash('Error en la depuración del archivo', "error")
+            flash('Error en la depuración del archivo', "error")
             return render_template("apology.html")

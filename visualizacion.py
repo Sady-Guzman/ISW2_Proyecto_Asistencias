@@ -11,7 +11,8 @@ visualizacion = Blueprint('visualizacion', __name__)
 def visualizar():
     """Display the contents of the uploaded CSV file."""
     
-    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'marcajes_original_processed.csv')
+    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'datos_procesados.csv')
+    # file_path = '/app/temp/datos_procesados.csv'
     
     if os.path.exists(file_path):
         # Load the CSV file with pandas
@@ -39,7 +40,8 @@ def apply_filters():
     tipo_marcaje = request.form.get('tipo_marcaje')
     condicion = request.form.get('condicion')
 
-    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'marcajes_original_processed.csv')
+    # file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'datos_procesados.csv')
+    file_path = '/app/temp/datos_procesados.csv'
     
     if 1 == 1:
         # Redireccionar por ahora. Construir funcion de filtro despues
