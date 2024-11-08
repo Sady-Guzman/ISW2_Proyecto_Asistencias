@@ -72,11 +72,11 @@ def duplicados(marcaje):
     nuevoDf = []
 
     for i, row in entrada.iterrows():
-            
-            # Agregar la fila actual
-            nuevoDf.append(row)  
-
+              
             if row['Error'] == 'Entrada duplicada':
+
+                # Agregar la fila actual
+                nuevoDf.append(row)
 
                 # Crear una fila de "salida creada por duplicado" con los mismos datos
                 salida_row = row.copy()
@@ -90,6 +90,8 @@ def duplicados(marcaje):
                 entrada_row['entrada/salida'] = 1  # Cambiar a entrada
                 entrada_row['Error'] = 'Entrada creada por duplicado'
                 nuevoDf.append(entrada_row)  # Agregar la nueva fila
+                # Agregar la fila actual
+                nuevoDf.append(row)
 
     entrada = pd.DataFrame(nuevoDf)
 
