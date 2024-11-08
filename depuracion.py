@@ -21,7 +21,7 @@ def depurar_archivo(file_path):
         marcaje = marcaOpuesto(marcaje, reglas)
 
         # Se termina la depuración y se eliminan las columnas que no sirven
-        marcaje = marcaje.drop(columns=['hora', 'minuto']) 
+        # marcaje = marcaje.drop(columns=['hora', 'minuto']) 
 
         data = marcaje
         data = data.dropna()
