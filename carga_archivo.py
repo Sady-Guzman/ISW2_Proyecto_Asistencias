@@ -25,16 +25,16 @@ def carga_archivo_func():
             return redirect('/carga')
         
         
-        file = request.files['file']
+        archivo = request.files['file']
         
             
-        if file.filename == '':
+        if archivo.filename == '':
             flash('No se detecta archivo', "error")
             return redirect('/carga')
         
         # Comprobar por extension, TIENE QUE SER '.log'
         
-        if not file.filename.endswith('.log'):
+        if not archivo.filename.endswith('.log'):
             flash('Tipo de archivo invalido, Intente nuevamente con un archivo tipo .log', "error")
             return redirect(request.url)
 
@@ -43,10 +43,10 @@ def carga_archivo_func():
         
         # werkzeug sanitiza nombre archivo
         # filename = secure_filename(file.filename)
-        filename = file.filename
+        filename = archivo.filename
         
         # Siempre se usa el mismo nombre para el archivo durante el manejo y se guarda el nombre original en un archivo txt
-        with open("NOMBRE_ORIGINAL_ARCHIVO.txt", "w") as file:
+        with open("/app/temp/NOMBRE_ORIGINAL_ARCHIVO.txt", "w") as file:
            file.write(filename)
         filename = 'marcajes_original.log'
 
@@ -66,7 +66,7 @@ def carga_archivo_func():
         print("Se va a guardar logs en file_path: ", file_path)
 
         try:
-            file.save(file_path)
+            archivo.save(file_path)
             print("Se guarda archivo correctamente")
             print(f"File saved to: {file_path}")
         except Exception as e:
