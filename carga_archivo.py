@@ -42,10 +42,11 @@ def carga_archivo_func():
         ''' MANEJA NOMBRE DEL ARCHIVO SUBIDO'''
         
         # werkzeug sanitiza nombre archivo
-        # filename = secure_filename(file.filename)
+        # filename = secure_filename(archivo.filename)
         filename = archivo.filename
         
         # Siempre se usa el mismo nombre para el archivo durante el manejo y se guarda el nombre original en un archivo txt
+        # En /app/temp/...
         with open("/app/temp/NOMBRE_ORIGINAL_ARCHIVO.txt", "w") as file:
            file.write(filename)
         filename = 'marcajes_original.log'
@@ -87,6 +88,7 @@ def carga_archivo_func():
         
         # LLama funcion de depuracion principal. Desde esta funcion de manejan varios tipos de depuracion. No esta en esta branch
         #processed_file_path = depurar_archivo(file_path)
+
 
         # if processed_filepath:
         if file_path:

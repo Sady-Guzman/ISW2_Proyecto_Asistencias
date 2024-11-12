@@ -10,7 +10,9 @@ visualizacion = Blueprint('visualizacion', __name__)
 @user_login_required
 def visualizar():
     """Display the contents of the uploaded CSV file."""
-    file_path = '/app/temp/marcajes_original.csv'  # Path to your CSV file
+    # Cambiar por ruta a archivo depurado, Por ahora usa original en branch desarrollo
+    file_path = '/app/temp/marcajes_original.csv'  # Path al archivo a mostrar
+    
     
     if os.path.exists(file_path):
         # Load the CSV file with pandas
