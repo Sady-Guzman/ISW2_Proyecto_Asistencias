@@ -3,29 +3,59 @@ import pandas as pd
 
 def depurar_archivo(file_path):
     """Function to clean and process the uploaded .log file."""
-    try:
     
+    try:
         # Assuming your .log file can be read with Pandas
         # marcaje = pd.read_csv(file_path, header= None, sep=',', usecols=[0, 2, 3, 5, 6], names=["Codigo", "entrada/salida", "rut", "hora", "minuto"])  
 
-        marcaje = pd.read_csv("marcajes_08-01-24.log", header= None, sep=',', 
+        marcaje = pd.read_csv(file_path, header= None, sep=',', 
                       names=["Codigo", "a", "entrada/salida", "rut","b", "hora", "minuto", "día", "mes", "año", "c", "d", "e", "f", "g", "h", "i", "j", "k"])
 
-        # Juntar hora y minuto en una solo columna
+        print("PEOPEO")
+        # Juntar hora y minuto en una sola columna
+        # Antes de exportar archivo en siguiente modulo se dropea col 'Hora' y 'Error'
         marcaje['Hora'] = marcaje['hora'].astype(str).str.zfill(2) + ':' + marcaje['minuto'].astype(str).str.zfill(2)       
-
-        reglas = pd.read_csv('Horarios Mes actual.csv')
-
-        # Depuración
+        
+        print("PEOPEO222")
+        
+        ruta_reglas = "/app/horarios_mes_actual.csv"
+        names_reglas = ["Codigo", "nombre", "año", "mes", "entrada", "salida", "horaEn", "minutoEn", "horaSal", "minutoSal"]
+        reglas = pd.read_csv(ruta_reglas, sep=',', names=names_reglas).dropna(axis='columns', how='all')
+        
+        print("PEOPEO333")
+    except Exception as e:
+            print(f"Error DEPURACION - Crea DF con contenido de archivo subido: {e}")
+            return None
+    
+    ''' DEPURACIONES '''
+    
+    ''' DUPLICADOS '''
+    try:
         marcaje = duplicados(marcaje)
+    except Exception as e:
+        print(f"Error DEPURACION - proceso DUPLICADOS: {e}")
+        return None
+    
+    ''' FALTA SALIDA'''
+    try:
         marcaje = faltaSalida(marcaje, reglas)
+    except Exception as e:
+        print(f"Error DEPURACION - proceso FALTA SALIDA: {e}")
+        return None
+    
+    ''' MARCA OPUESTO '''
+    try:
         marcaje = marcaOpuesto(marcaje, reglas)
-
+    except Exception as e:
+        print(f"Error DEPURACION - proceso MARCA OPUESTO: {e}")
+        return None
+    
+    try:
         # Se termina la depuración y se eliminan las columnas que no sirven
         # marcaje = marcaje.drop(columns=['hora', 'minuto']) 
 
         data = marcaje
-        data = data.dropna()
+        # data = data.dropna()
 
         # Return processed data or save it to a new file
         # processed_file_path = file_path.replace(".log", "_processed.csv")
@@ -35,16 +65,13 @@ def depurar_archivo(file_path):
         
 
         # Save the DataFrame to a CSV file
-        data.to_csv('/app/temp/datos_procesados.csv', index=False, encoding='utf-8')
+        path_temp = '/app/temp/datos_procesados.csv'
+        data.to_csv(path_temp, index=False, encoding='utf-8')
+        print(f"Se guarda archivo procesado en {path_temp}. [Mod Dep]")
         
-        # processed_file_path = '/app/temp/datos_procesados.csv'
-
-        # Optionally, print the DataFrame to verify
-        # print(df.head())
-        # return processed_file_path  # Return path of processed file
     
     except Exception as e:
-        print(f"Error processing file: {e}")
+        print(f"Error DEPURACION - proceso GUARDADO ARCHIVO DEPURADO: {e}")
         return None
 
 def duplicados(marcaje):
@@ -126,7 +153,7 @@ def faltaSalida(marcaje, reglas):
             codigoHorario = row['Codigo']
             
             # Se procede a arreglar reemplazando el horario por el tiempo esperado de salida según reglamento  
-            for j, row2 in reglas.itrrows():
+            for j, row2 in reglas.iterrows():
                 if (codigoHorario == row2['Codigo']):
                     
                     HorarioSalida = row2['salida']
@@ -152,7 +179,7 @@ def marcaOpuesto(marcaje, reglas):
         codigoHorario = row['Codigo']
         rut = row['rut']
 
-        for j, row2 in reglas.itrrows():
+        for j, row2 in reglas.iterrows():
             if (codigoHorario == row2['Codigo']):
                 
                 horaEntrada = row2['horaEn']

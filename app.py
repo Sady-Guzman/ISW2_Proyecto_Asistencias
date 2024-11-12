@@ -6,6 +6,12 @@ from manejo_cuentas import manejo_cuentas
 from carga_archivo import carga_archivo
 from visualizacion import visualizacion
 
+'''
+
+temp/marcajes_original.csv -> Nombre que se le asigna al archivo subido por usuario. Originalmente es .log
+temp/datos_procesados.csv -> Nombre de archivo original despues de pasar por modulo de depuracion
+
+'''
 
 app = Flask(__name__)
 app.config['DEBUG'] = True

@@ -10,8 +10,11 @@ visualizacion = Blueprint('visualizacion', __name__)
 @user_login_required
 def visualizar():
     """Display the contents of the uploaded CSV file."""
-    # Cambiar por ruta a archivo depurado, Por ahora usa original en branch desarrollo
-    file_path = '/app/temp/marcajes_original.csv'  # Path al archivo a mostrar
+
+    
+    # Path al archivo a mostrar (Archivo ya paso por depuracion)
+    file_path = '/app/temp/datos_procesados.csv'
+    
     
     
     if os.path.exists(file_path):
