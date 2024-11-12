@@ -19,55 +19,55 @@ def carga_archivo_func():
         # Comprueba archivo
         if 'file' not in request.files:
             flash('No se detecta archivo', "error")
-            return redirect(request.url)
+            return redirect('/carga')
         
         file = request.files['file']
             
         if file.filename == '':
             flash('No se detecta archivo', "error")
-            return redirect(request.url)
+            return redirect('/carga')
         
-        # Comprobar tambien por extension '.log'
+        
+        # Comprobar por extension, TIENE QUE SER '.log'
         '''
         if not file.filename.endswith('.log'):
             flash('Tipo de archivo invalido, Intente nuevamente con un archivo tipo .log', "error")
             return redirect(request.url)
         '''
         
+        
         # werkzeug sanitiza nombre archivo
         # filename = secure_filename(file.filename)
-        # Recordar cambiar a nombre original (y que sea .log
-        filename = 'marcajes_original.csv'
+        # Recordar cambiar a nombre original (y que sea .log) -- LISTO
+        filename = 'marcajes_original.log'
 
         # Change the file extension to .csv
         # PARA USAR JQuery. pendiente ver si se transforma aqui o en MOD Depuracion
-        #csv_filename = filename.replace('.log', '.csv')
+        csv_filename = filename.replace('.log', '.csv')
+        
         
         # Guarda archivo en file_path 
-        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-        print("Se guarda a file_path: ", file_path)
+        # cambiar 'csv_filename' por 'filename' despues de debug
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], csv_filename)
+        # '/app/temp/marcajes_original.log'
+        print("Se va a guardar logs en file_path: ", file_path)
 
         try:
             file.save(file_path)
         except Exception as e:
-            print(f"Error saving file: {e}")
+            print(f"Error al guardar el archivo: {e}")
             flash('Error al subir archivo', "error")   
             return render_template("apology.html") # Por ahora
             
         
-        # flash('Archivo correctamente importado')
+        flash('Archivo correctamente importado')
+        
         # Debug
         print(f"File saved to: {file_path}")
         # Para verlo dentro de container
         # docker-compose exec -it flask_app /bin/bash
-        # Hacer que sea visible en IDE ??
 
         
-        # EJEMPLO DE MANEJO ARCHIVO
-        # Open and process the file from the saved location
-        # with open(file_path, 'rb') as f:
-            # file_content = f.read()
-
         # LLama funcion de depuracion principal. Desde esta funcion de manejan varios tipos de depuracion
         #processed_file_path = depurar_archivo(file_path)
 

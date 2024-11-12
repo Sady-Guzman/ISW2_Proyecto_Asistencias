@@ -53,11 +53,7 @@ def apply_filters():
     # file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'datos_procesados.csv')
     file_path = '/app/temp/datos_procesados.csv'
     
-    if 1 == 1:
-        # Redireccionar por ahora. Construir funcion de filtro despues
-        flash("La funcion de filtro aún esta en construcción.", "error")
-        return render_template("apology.html")
-    else:
+    if file_path:
         if os.path.exists(file_path):
             # Load the CSV file with pandas
             df = pd.read_csv(file_path)
@@ -84,4 +80,8 @@ def apply_filters():
         else:
             flash("Archivo no disponible. Por favor importar archivo.", "error")
             return redirect('/cargar')
+    else:
+        # Redireccionar por ahora. Construir funcion de filtro despues
+        flash("La funcion de filtro aún esta en construcción.", "error")
+        return render_template("apology.html")
 

@@ -16,8 +16,17 @@
     <title>CleanSys: Visualización de Archivo</title>
 </head>
 
+
+
+
+
+
+
 <body>
+    
+    
     <!-- Header with Navbar -->
+     <!-- No se usa de layout para usar de forma distinta los divs -->
     <nav class="bg-light border navbar navbar-expand-md navbar-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="/"><span class="blue">Clean</span> <span class="red">System</span></a>
@@ -35,6 +44,11 @@
         </div>
     </nav>
 
+
+
+
+
+    <!-- Filtro y tabla -->
     <div class="container-fluid my-4">
         <div class="row">
             <div class="col-12">
@@ -99,6 +113,9 @@
         </div>
     </div>
 
+
+
+    <!-- JS para funcionalidad -->
     <script>
         // Toggle all checkboxes
         function toggleAllCheckboxes(source) {
@@ -111,7 +128,6 @@
         // Read and display CSV file
         $(document).ready(function() {
             // File selection logic commented out
-            /*
             $('#csvFileInput').on('change', function(event) {
                 const file = event.target.files[0];
                 if (file) {
@@ -123,7 +139,7 @@
                     reader.readAsText(file);
                 }
             });
-            */
+            
     
             // Archivo pasado en argumento en llamada
             const filePath = "{{ '/app/temp/marcajes_original.csv' }}";
@@ -137,7 +153,7 @@
                     displayCSV(csvText);
                 },
                 error: function() {
-                    alert("Error loading the file");
+                    alert("Error loading the file (modulo visualizacion)");
                 }
             });
     
@@ -177,6 +193,8 @@
     </script>
     
 
+
+    <!-- SACAR A STYLES.CSS eventualmente -->
     <style>
         /* General table and container styling */
         body {
