@@ -107,9 +107,11 @@
                 checkbox.checked = source.checked;
             }
         }
-
+    
         // Read and display CSV file
         $(document).ready(function() {
+            // File selection logic commented out
+            /*
             $('#csvFileInput').on('change', function(event) {
                 const file = event.target.files[0];
                 if (file) {
@@ -121,21 +123,39 @@
                     reader.readAsText(file);
                 }
             });
-
+            */
+    
+            // Archivo pasado en argumento en llamada
+            const filePath = "{{ '/app/temp/marcajes_original.csv' }}";
+            
+            // Read CSV from carga.py
+            $.ajax({
+                url: filePath,
+                method: 'GET',
+                dataType: 'text',
+                success: function(csvText) {
+                    displayCSV(csvText);
+                },
+                error: function() {
+                    alert("Error loading the file");
+                }
+            });
+    
+            // Function to display CSV data
             function displayCSV(csvText) {
                 const rows = csvText.split("\n");
                 const $tableHeader = $('#tableHeader');
                 const $tableBody = $('#csvTableBody');
-
+    
                 // Clear any previous data
                 $tableHeader.find("th:gt(0)").remove();
                 $tableBody.empty();
-
+    
                 // Parse CSV and populate table
                 rows.forEach((row, rowIndex) => {
                     const cells = row.split(",");
                     const $row = $('<tr></tr>');
-
+    
                     if (rowIndex === 0) {
                         // Populate header
                         cells.forEach(cell => {
@@ -144,7 +164,7 @@
                     } else {
                         // Add checkbox cell
                         $row.append('<td class="checkbox-cell"><input type="checkbox" class="row-checkbox"></td>');
-
+    
                         // Populate data rows
                         cells.forEach(cell => {
                             $row.append(`<td>${cell.trim()}</td>`);
@@ -155,6 +175,7 @@
             }
         });
     </script>
+    
 
     <style>
         /* General table and container styling */

@@ -36,7 +36,8 @@ def carga_archivo_func():
         
         # werkzeug sanitiza nombre archivo
         # filename = secure_filename(file.filename)
-        filename = 'marcajes_original.log'
+        # Recordar cambiar a nombre original (y que sea .log
+        filename = 'marcajes_original.csv'
 
         # Change the file extension to .csv
         # PARA USAR JQuery. pendiente ver si se transforma aqui o en MOD Depuracion
@@ -44,6 +45,7 @@ def carga_archivo_func():
         
         # Guarda archivo en file_path 
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        print("Se guarda a file_path: ", file_path)
 
         try:
             file.save(file_path)
@@ -67,10 +69,12 @@ def carga_archivo_func():
             # file_content = f.read()
 
         # LLama funcion de depuracion principal. Desde esta funcion de manejan varios tipos de depuracion
-        processed_file_path = depurar_archivo(file_path)
+        #processed_file_path = depurar_archivo(file_path)
 
-        if processed_file_path:
+        # if processed_filepath:
+        if file_path:
                 # flash('Archivo depurado correctamente')
+                #return redirect('/visualizacion')
                 return redirect('/visualizacion')
         else:
             flash('Error en la depuración del archivo', "error")

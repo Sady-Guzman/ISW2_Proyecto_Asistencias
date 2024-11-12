@@ -11,9 +11,18 @@ visualizacion = Blueprint('visualizacion', __name__)
 def visualizar():
     """Display the contents of the uploaded CSV file."""
     
-    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'datos_procesados.csv')
+    #file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'datos_procesados.csv')
     # file_path = '/app/temp/datos_procesados.csv'
+    file_path = '/app/temp/marcajes_original.csv'
     
+    if file_path:
+        return render_template("visualizacion.html", uploaded_file = file_path)
+    else:
+        # Handle missing file scenario
+        flash("Archivo no disponible. Por favor importar archivo.", "error")
+        return redirect('/cargar')
+
+    '''
     if os.path.exists(file_path):
         # Load the CSV file with pandas
         df = pd.read_csv(file_path)
@@ -27,6 +36,7 @@ def visualizar():
         # Handle missing file scenario
         flash("Archivo no disponible. Por favor importar archivo.", "error")
         return redirect('/cargar')
+    '''
 
 @visualizacion.route('/apply_filters', methods=['POST'])
 @user_login_required
