@@ -11,18 +11,15 @@ def depurar_archivo(file_path):
         marcaje = pd.read_csv(file_path, header= None, sep=',', 
                       names=["Codigo", "a", "entrada/salida", "rut","b", "hora", "minuto", "día", "mes", "año", "c", "d", "e", "f", "g", "h", "i", "j", "k"])
 
-        print("PEOPEO")
         # Juntar hora y minuto en una sola columna
         # Antes de exportar archivo en siguiente modulo se dropea col 'Hora' y 'Error'
         marcaje['Hora'] = marcaje['hora'].astype(str).str.zfill(2) + ':' + marcaje['minuto'].astype(str).str.zfill(2)       
         
-        print("PEOPEO222")
         
         ruta_reglas = "/app/horarios_mes_actual.csv"
         # names_reglas = ["Codigo", "nombre", "año", "mes", "entrada", "salida", "horaEn", "minutoEn", "horaSal", "minutoSal"]
         reglas = pd.read_csv(ruta_reglas, sep=';').dropna(axis='columns', how='all')
         
-        print("PEOPEO333")
     except Exception as e:
             print(f"Error DEPURACION - Crea DF con contenido de archivo subido: {e}")
             return None
