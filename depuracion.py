@@ -201,8 +201,8 @@ def marcaOpuesto(marcaje, reglas):
             df.at[i, 'entrada/salida'] = 3
 
             if (row['Error'] == 'Ok'):
-                df.at[i, 'Error'] = "Posible entrada marcada como salida"
+                df.at[i, 'Error'] = "Posible salida marcada como entrada"
             else:
-                df.at[i, 'Error'] += ", Posible entrada marcada como salida"
+                df.at[i, 'Error'] += ", Posible salida marcada como entrada"
 
     return df
