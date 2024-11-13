@@ -19,8 +19,8 @@ def depurar_archivo(file_path):
         print("PEOPEO222")
         
         ruta_reglas = "/app/horarios_mes_actual.csv"
-        names_reglas = ["Codigo", "nombre", "año", "mes", "entrada", "salida", "horaEn", "minutoEn", "horaSal", "minutoSal"]
-        reglas = pd.read_csv(ruta_reglas, sep=',', names=names_reglas).dropna(axis='columns', how='all')
+        # names_reglas = ["Codigo", "nombre", "año", "mes", "entrada", "salida", "horaEn", "minutoEn", "horaSal", "minutoSal"]
+        reglas = pd.read_csv(ruta_reglas, sep=';').dropna(axis='columns', how='all')
         
         print("PEOPEO333")
     except Exception as e:
@@ -75,64 +75,65 @@ def depurar_archivo(file_path):
         return None
 
 def duplicados(marcaje):
-    entrada = marcaje
+    entrada = marcaje.copy()  # Crear una copia para evitar modificar el original
 
-    # Ordenar por rut día y hora
+    # Ordenar por rut, día y hora
     entrada = entrada.sort_values(by=['rut', 'día', 'Hora']).reset_index(drop=True)
 
     # Columna de errores
     entrada['Error'] = 'Ok'
 
-    # Verficar entrada (1) - entrada (1) sin salida (3) en medio
+    # Verificar entradas duplicadas
     for rut, group in entrada.groupby('rut'):
         
-        # Cual fue la ultima accion
+        # Variable para almacenar la última acción
         ultima_accion = None
         for i in range(len(group) - 1):
             fila_actual = group.iloc[i]
             fila_siguiente = group.iloc[i + 1]
             
-            # Revisa si no existe ninguna entrada duplicada
+            # Verificar si hay entradas duplicadas sin salida entre ellas
             if (fila_actual['entrada/salida'] == 1 and fila_siguiente['entrada/salida'] == 1 and ultima_accion != 3):
-
-                # Marcar entrada duplicada
+                # Marcar como entrada duplicada
                 entrada.loc[group.index[i + 1], 'Error'] = 'Entrada duplicada'
 
+            # Verificar si hay salidas duplicadas sin entrada entre ellas
             elif (fila_actual['entrada/salida'] == 3 and fila_siguiente['entrada/salida'] == 3 and ultima_accion != 1):
-                
-                # Marcar salida duplicada
+                # Marcar como salida duplicada
                 entrada.loc[group.index[i + 1], 'Error'] = 'Salida duplicada'
                 
-            
             ultima_accion = fila_actual['entrada/salida']
 
-            
     entrada = entrada.sort_values(by=['día', 'Hora']).reset_index(drop=True)
 
     nuevoDf = []
 
     for i, row in entrada.iterrows():
-              
-            if row['Error'] == 'Entrada duplicada':
-
-                # Agregar la fila actual
-                nuevoDf.append(row)
-
-                # Crear una fila de "salida creada por duplicado" con los mismos datos
-                salida_row = row.copy()
-                salida_row['entrada/salida'] = 3  # Cambiar a salida
-                salida_row['Error'] = 'Salida creada por duplicado'
-                nuevoDf.append(salida_row)  # Agregar la nueva fila
+        # Si no hay error, incluir la fila tal cual
+        if row['Error'] == 'Ok':
+            nuevoDf.append(row)
             
-            elif row['Error'] == 'Salida duplicada':
-                # Crear una fila de "entrada creada por duplicado" con los mismos datos
-                entrada_row = row.copy()
-                entrada_row['entrada/salida'] = 1  # Cambiar a entrada
-                entrada_row['Error'] = 'Entrada creada por duplicado'
-                nuevoDf.append(entrada_row)  # Agregar la nueva fila
-                # Agregar la fila actual
-                nuevoDf.append(row)
+        elif row['Error'] == 'Entrada duplicada':
+            # Agregar la fila actual
+            nuevoDf.append(row)
 
+            # Crear una fila de "salida creada por duplicado" con los mismos datos
+            salida_row = row.copy()
+            salida_row['entrada/salida'] = 3  # Cambiar a salida
+            salida_row['Error'] = 'Salida creada por duplicado'
+            nuevoDf.append(salida_row)  # Agregar la nueva fila
+            
+        elif row['Error'] == 'Salida duplicada':
+            # Crear una fila de "entrada creada por duplicado" con los mismos datos
+            entrada_row = row.copy()
+            entrada_row['entrada/salida'] = 1  # Cambiar a entrada
+            entrada_row['Error'] = 'Entrada creada por duplicado'
+            nuevoDf.append(entrada_row)  # Agregar la nueva fila
+
+            # Agregar la fila actual
+            nuevoDf.append(row)
+
+    # Crear un nuevo DataFrame a partir de nuevoDf, que ahora incluye todas las filas
     entrada = pd.DataFrame(nuevoDf)
 
     return entrada
