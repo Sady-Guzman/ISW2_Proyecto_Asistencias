@@ -45,11 +45,12 @@
             <!-- Filter Section -->
             <div class="col-lg-2 filter-sidebar">
                 <h2>Filtros</h2>
+                <!-- LLAMA FUNCION DE FILTROS -->
                 <form method="POST" action="{{ url_for('visualizacion.apply_filters') }}">
                     <!-- Filter by RUT -->
                     <div class="form-group">
                         <label for="filter-rut">Filtrar por RUT</label>
-                        <input type="text" class="form-control" id="filter-rut" name="filter_rut" placeholder="Ingrese RUT">
+                        <input type="text" class="form-control" id="filter-rut" name="rut_filter" placeholder="Ingrese RUT">
                     </div>
                     
                     <!-- Filter by Time Range -->
@@ -61,21 +62,21 @@
                         <label for="to-hour">Hora Hasta</label>
                         <input type="time" class="form-control" id="to-hour" name="to_hour">
                     </div>
-
+                
                     <!-- Entry/Exit Filter -->
                     <div class="form-group mt-3">
                         <label for="entry-exit">Entrada/Salida</label>
-                        <select class="form-control" id="entry-exit" name="entry_exit">
+                        <select class="form-control" id="entry-exit" name="tipo_marcaje">
                             <option value="any">Cualquiera</option>
                             <option value="entrada">Entrada</option>
                             <option value="salida">Salida</option>
                         </select>
                     </div>
-
+                
                     <!-- Condition Filter -->
                     <div class="form-group mt-3">
                         <label for="condition">Condición</label>
-                        <select class="form-control" id="condition" name="condition">
+                        <select class="form-control" id="condition" name="condicion">
                             <option value="any">Cualquiera</option>
                             <option value="duplicado">Duplicado</option>
                             <option value="saltado">Saltado</option>
@@ -87,6 +88,8 @@
                     <!-- Apply Filters Button -->
                     <button type="submit" class="btn btn-primary mt-4">Aplicar Filtros</button>
                 </form>
+                
+
             </div>
 
             <!-- Table Section -->
