@@ -140,7 +140,7 @@ def faltaSalida(marcaje, reglas):
 
     for  i, row in salida.iterrows():
 
-        error = 'Salida automatica detectada'
+        error = 'Salida automatica corregida'
 
         if (row['Hora'] == '00:00'):
             if(salida.at[i, 'Error'] == 'Ok'):
@@ -192,17 +192,17 @@ def marcaOpuesto(marcaje, reglas):
         if (row['hora'] == horaEntrada and (minutoEntrada - 10) <= row['minuto'] and  row['minuto'] <= (minutoEntrada + 30) and rut == row['rut'] and row['entrada/salida'] == 3):
             df.at[i, 'entrada/salida'] = 1
             if (row['Error'] == 'Ok'):
-                df.at[i, 'Error'] = "Posible entrada marcada como salida"
+                df.at[i, 'Error'] = "Salida invertida a entrada"
             else:
-                df.at[i, 'Error'] += ", Posible entrada marcada como salida"
+                df.at[i, 'Error'] += ", Salida invertida a entrada"
 
         # Buscar salida con una ventana de 10 minutos en donde se marca entrada y corregir
         if (row['hora'] == horaSalida and (minutoSalida - 10) <= row['minuto'] and  row['minuto'] <= (minutoSalida + 10) and rut == row['rut'] and row['entrada/salida'] == 1):
             df.at[i, 'entrada/salida'] = 3
 
             if (row['Error'] == 'Ok'):
-                df.at[i, 'Error'] = "Posible salida marcada como entrada"
+                df.at[i, 'Error'] = "Entrada invertida a salida"
             else:
-                df.at[i, 'Error'] += ", Posible salida marcada como entrada"
+                df.at[i, 'Error'] += ", Entrada invertida a salida"
 
     return df
