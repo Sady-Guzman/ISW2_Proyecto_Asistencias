@@ -65,8 +65,27 @@ def apply_filters():
         if rut_filter:
             df = df[df['rut'] == rut_filter]
         
-        if from_hour and to_hour:
-            df = df[(df['hora'] >= from_hour) & (df['hora'] <= to_hour)]
+         # Filter by 'Hora' using 'hora' and 'minuto' columns
+        # if from_hour and to_hour:
+        #     # Combine 'hora' and 'minuto' into a time format for comparison
+        #     df['time'] = pd.to_datetime(df['hora'].astype(str) + ':' + df['minuto'].astype(str), format='%H:%M').dt.time
+        #     from_hour = pd.to_datetime(from_hour, format='%H:%M').time()
+        #     to_hour = pd.to_datetime(to_hour, format='%H:%M').time()
+        #     df = df[(df['time'] >= from_hour) & (df['time'] <= to_hour)]
+
+
+        # Combine 'hora' and 'minuto' into a time format for comparison
+        df['time'] = pd.to_datetime(df['hora'].astype(str) + ':' + df['minuto'].astype(str), format='%H:%M').dt.time
+        
+        # Apply time filters based on available inputs
+        if from_hour:
+            from_hour = pd.to_datetime(from_hour, format='%H:%M').time()
+            df = df[df['time'] >= from_hour]
+        
+        if to_hour:
+            to_hour = pd.to_datetime(to_hour, format='%H:%M').time()
+            df = df[df['time'] <= to_hour]
+
         
         if tipo_marcaje != 'any':
             df = df[df['marcaje'] == tipo_marcaje]
