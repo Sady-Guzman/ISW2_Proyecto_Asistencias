@@ -66,7 +66,7 @@ def apply_filters():
         if rut_filter:
             df = df[df['rut'] == rut_filter]
         
-        # Filtro TIEMPO
+        # Filtro TIEMPO --- Falta arreglar formato 12 y 24 horas
         # Combina las columnas hora y minuto
         df['time'] = pd.to_datetime(df['hora'].astype(str) + ':' + df['minuto'].astype(str), format='%H:%M').dt.time
         
@@ -94,33 +94,83 @@ def apply_filters():
 
 
         # Filtro por ENTRADA / SALIDA
-        if tipo_marcaje:
-            if tipo_marcaje == 'any':
-                # se ignora
-                print("Tipo Marcaje: ANY")
-            else: 
-                # Map 'Entrada' to '01' and 'Salida' to '03'
-                # Ojo con codigo, Deberia tener 0 a la izquierda
-                tipo_numerico = "1" if tipo_marcaje == "entrada" else "3"
-
-                print(f"El tipo de marcaje que se busca es: {tipo_marcaje}, y tipo_numerico: {tipo_numerico}")
-
-                try:
-                    # Ensure that the column is treated as a string to match "01" or "03"
-                    df['entrada/salida'] = df['entrada/salida'].astype(str)
-                    
-                    # Apply the filter based on `tipo_numerico`
-                    df = df[df['entrada/salida'] == tipo_numerico]
-                except Exception as e:
-                    print(f"Error filtering entrada/salida: {e}")
-                    flash("Error al filtrar por entrada/salida.", "error")
-                    return render_template("apology.html")
+        if tipo_marcaje and tipo_marcaje != 'any':
+            # Map 'Entrada' to '01' and 'Salida' to '03'
+            # Ojo con codigo, Deberia tener 0 a la izquierda
             
+            if tipo_marcaje == "entrada":
+                tipo_numerico = "1"
+            else:
+                tipo_numerico = "3"
+            
+
+            print(f"El tipo de marcaje que se busca es: {tipo_marcaje}, y tipo_numerico: {tipo_numerico}")
+
+            try:
+                # Ensure that the column is treated as a string to match "01" or "03"
+                df['entrada/salida'] = df['entrada/salida'].astype(str)
+                
+                # Apply the filter based on `tipo_numerico`
+                df = df[df['entrada/salida'] == tipo_numerico]
+            except Exception as e:
+                print(f"Error filtering entrada/salida: {e}")
+                flash("Error al filtrar por entrada/salida.", "error")
+                return render_template("apology.html")
+        
 
         # Filtro por ESTADO del marcaje
         # Puede ser OK, DUPLICADO, SALTADO, OPUESTO
-        if condicion != 'any':
-            df = df[df['condicion'] == condicion]
+        if condicion and condicion != 'any':
+
+            print("Valor de variable condicion: ", condicion)
+
+            # Define keywords based on the selected condition
+            keywords = []
+            if condicion == "duplicado":
+                keywords = ["duplicado", "duplicada"]
+            elif condicion == "saltado":
+                keywords = ["automatica"]
+            elif condicion == "invertir":
+                keywords = ["invertida"]
+            elif condicion == "correcto":
+                print("Se elige Correcto en filtro")
+                keywords = ["Ok"]
+
+            print(" Pasa Keywords")
+
+            # Debug: Print the filtered DataFrame to confirm
+            # print(df.head())
+            
+            # If there are keywords to filter, apply the filter
+            if keywords:
+                # Combine the keywords into a regex pattern (e.g., 'duplicado|duplicada')
+                pattern = '|'.join(keywords)
+
+                # Debug: Print the pattern for confirmation
+                print("Pattern:", pattern)
+
+
+                try:
+                    # Check the 'error' column first for any NaN values, strip whitespaces, and apply filter
+                    df['Error'] = df['Error'].str.strip()  # Remove leading/trailing spaces
+                except Exception as e: 
+                    print(f"Error str.strip condicion: {e}")
+                    return render_template("apology.html")
+                try:
+                     # Filter rows where 'error' contains any of the keywords as substrings
+                    df = df[df['Error'].str.contains(pattern, case=False, na=False)]
+
+                except Exception as e: 
+                    print(f"Error filtering condicion: {e}")
+                    return render_template("apology.html")
+
+
+                # Debug: Print the filtered DataFrame to confirm
+                print(df.head())
+
+            else:
+                print("No keywords to filter on.")
+                
         
         
         # Agregar Filtro de columnas TODO
@@ -143,5 +193,6 @@ def apply_filters():
         return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data)
     
     except Exception as e:
+        print(f"Error: {e}")        
         flash("La función de filtro aún está en construcción.", "error")
         return render_template("apology.html")
