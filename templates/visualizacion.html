@@ -49,7 +49,7 @@
                 <form method="POST" action="{{ url_for('visualizacion.apply_filters') }}">
                     <!-- Filter by RUT -->
                     <div class="form-group">
-                        <label for="filter-rut">Filtrar por RUT</label>
+                        <label for="filter-rut">RUT</label>
                         <input type="text" class="form-control" id="filter-rut" name="rut_filter" placeholder="Ingrese RUT">
                     </div>
                     
@@ -83,6 +83,12 @@
                             <option value="saltado">Saltado</option>
                             <option value="invertir">Invertir</option>
                         </select>
+                    </div>
+
+                    <!-- Codigo horario trabajador Filter -->
+                    <div class="form-group mt-3">
+                        <label for="filter-rut">Código horario</label>
+                        <input type="text" class="form-control" id="filter-codigo" name="codigo_filter" placeholder="Ingrese codigo">
                     </div>
                     
                     <!-- Apply Filters Button -->

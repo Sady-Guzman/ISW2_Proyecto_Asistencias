@@ -53,6 +53,7 @@ def apply_filters():
     to_hour = request.form.get('to_hour')
     tipo_marcaje = request.form.get('tipo_marcaje')
     condicion = request.form.get('condicion')
+    codigo_filter = request.form.get('codigo_filter')
 
     file_path = '/app/temp/datos_procesados.csv'
     
@@ -173,7 +174,14 @@ def apply_filters():
                 
         
         
-        # Agregar Filtro de columnas TODO
+        # FILTRO codigo
+        if codigo_filter:
+            print("Codigo ingresado: ", codigo_filter)
+            print(df['Codigo'].head())
+
+            # Convert 'Codigo' column to string for comparison
+            df['Codigo'] = df['Codigo'].astype(str)
+            df = df[df['Codigo'] == codigo_filter]
         
 
 
