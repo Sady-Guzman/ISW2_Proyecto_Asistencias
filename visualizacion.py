@@ -61,23 +61,16 @@ def apply_filters():
         # Load the CSV file with pandas
         df = pd.read_csv(file_path)
         
-        # Apply filters if they are provided
+
+        # FILTRO RUT
         if rut_filter:
             df = df[df['rut'] == rut_filter]
         
-         # Filter by 'Hora' using 'hora' and 'minuto' columns
-        # if from_hour and to_hour:
-        #     # Combine 'hora' and 'minuto' into a time format for comparison
-        #     df['time'] = pd.to_datetime(df['hora'].astype(str) + ':' + df['minuto'].astype(str), format='%H:%M').dt.time
-        #     from_hour = pd.to_datetime(from_hour, format='%H:%M').time()
-        #     to_hour = pd.to_datetime(to_hour, format='%H:%M').time()
-        #     df = df[(df['time'] >= from_hour) & (df['time'] <= to_hour)]
-
-
-        # Combine 'hora' and 'minuto' into a time format for comparison
+        # Filtro TIEMPO
+        # Combina las columnas hora y minuto
         df['time'] = pd.to_datetime(df['hora'].astype(str) + ':' + df['minuto'].astype(str), format='%H:%M').dt.time
         
-        # Apply time filters based on available inputs
+        # Aplica los filtros independientemente entre to y from
         if from_hour:
             from_hour = pd.to_datetime(from_hour, format='%H:%M').time()
             df = df[df['time'] >= from_hour]
@@ -87,15 +80,56 @@ def apply_filters():
             df = df[df['time'] <= to_hour]
 
         
-        if tipo_marcaje != 'any':
-            df = df[df['marcaje'] == tipo_marcaje]
-        
+        # Filtro por ENTRADA / SALIDA
+        # if tipo_marcaje:
+
+        #     # Asigna el numero correspondiente a el marcaje para filtrar en df
+        #     if tipo_marcaje == "Entrada":
+        #         tipo_numerico = "01"
+        #     if tipo_marcaje == "Salida":
+        #         tipo_numerico = "03"
+
+        #     # Compara con codigo numerico
+        #     df = df[df['entrada/salida'] == tipo_numerico]
+
+
+        # Filtro por ENTRADA / SALIDA
+        if tipo_marcaje:
+            if tipo_marcaje == 'any':
+                # se ignora
+                print("Tipo Marcaje: ANY")
+            else: 
+                # Map 'Entrada' to '01' and 'Salida' to '03'
+                # Ojo con codigo, Deberia tener 0 a la izquierda
+                tipo_numerico = "1" if tipo_marcaje == "entrada" else "3"
+
+                print(f"El tipo de marcaje que se busca es: {tipo_marcaje}, y tipo_numerico: {tipo_numerico}")
+
+                try:
+                    # Ensure that the column is treated as a string to match "01" or "03"
+                    df['entrada/salida'] = df['entrada/salida'].astype(str)
+                    
+                    # Apply the filter based on `tipo_numerico`
+                    df = df[df['entrada/salida'] == tipo_numerico]
+                except Exception as e:
+                    print(f"Error filtering entrada/salida: {e}")
+                    flash("Error al filtrar por entrada/salida.", "error")
+                    return render_template("apology.html")
+            
+
+        # Filtro por ESTADO del marcaje
+        # Puede ser OK, DUPLICADO, SALTADO, OPUESTO
         if condicion != 'any':
             df = df[df['condicion'] == condicion]
         
         
         # Agregar Filtro de columnas TODO
         
+
+
+        ''' Saca columnas 'basura' de df que se muestra en MOD VIS '''
+
+
         # Seleccionar solo las cols que tienen info relevante.
         # El archivo que generan los relojes tiene varios campos que no se usan.
         # 0: Codigo, 2: Entrada(1)/Salida(3), 3: RUT, 5: Hora, 6: Minuto, 7: Mes, 8: Dia, 9: Anho, 21: Estado/Error/Solucion
