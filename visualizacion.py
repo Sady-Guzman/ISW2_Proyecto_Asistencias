@@ -20,10 +20,15 @@ def visualizar():
     if os.path.exists(file_path):
         # Load the CSV file with pandas
         df = pd.read_csv(file_path)
+        
+        # Seleccionar solo las cols que tienen info relevante.
+        # El archivo que generan los relojes tiene varios campos que no se usan.
+        # 0: Codigo, 2: Entrada(1)/Salida(3), 3: RUT, 5: Hora, 6: Minuto, 7: Mes, 8: Dia, 9: Anho
+        df_filtrado = df.iloc[:, [0, 2, 3, 5, 6, 7, 8, 9]]
 
         # Prepare data for rendering in the template
-        table_columns = df.columns.tolist()
-        table_data = df.values.tolist()
+        table_columns = df_filtrado.columns.tolist()
+        table_data = df_filtrado.values.tolist()
         
         return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data)
     else:

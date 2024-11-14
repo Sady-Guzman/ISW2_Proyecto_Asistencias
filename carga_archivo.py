@@ -87,7 +87,8 @@ def carga_archivo_func():
         
         
         # LLama funcion de depuracion principal. Desde esta funcion de manejan varios tipos de depuracion. No esta en esta branch
-        file_path_depurado = depurar_archivo(file_path)
+        depurar_archivo(file_path)
+        
 
 
         # if processed_filepath:
