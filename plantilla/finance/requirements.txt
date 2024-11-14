@@ -1,4 +1,0 @@
-Flask
-Flask-Session
-Werkzeug
-Jinja2>=3.0

@@ -4,17 +4,29 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <link href="/static/styles.css" rel="stylesheet">
     <title>CleanSys: Visualización de Archivo</title>
 </head>
 
+
+
+
+
+
+
 <body>
+    
+    
     <!-- Header with Navbar -->
+     <!-- No se usa de layout para usar de forma distinta los divs -->
     <nav class="bg-light border navbar navbar-expand-md navbar-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="/"><span class="blue">Clean</span> <span class="red">System</span></a>
@@ -32,28 +44,28 @@
         </div>
     </nav>
 
-    <!-- Container for Filters and Table -->
+
+
+
+
+    <!-- Filtro y tabla -->
     <div class="container-fluid my-4">
         <div class="row">
             <div class="col-12">
-                <h1 class="mb-4">Contenido de marcajes</h1>
+                <h1 class="mb-4">Contenido del Archivo Subido</h1>
+                <input type="file" id="csvFileInput" accept=".csv" class="form-control" />
             </div>
         </div>
 
         <div class="row">
-
-            <!-- Filter Section -->
+            <!-- Filter Section (smaller column) -->
             <div class="col-lg-2 filter-sidebar">
                 <h2>Filtros</h2>
-                <!-- LLAMA FUNCION DE FILTROS -->
                 <form method="POST" action="{{ url_for('visualizacion.apply_filters') }}">
-                    <!-- Filter by RUT -->
                     <div class="form-group">
                         <label for="filter-rut">Filtrar por RUT</label>
-                        <input type="text" class="form-control" id="filter-rut" name="rut_filter" placeholder="Ingrese RUT">
+                        <input type="text" class="form-control" id="filter-rut" name="filter_rut" placeholder="Ingrese RUT">
                     </div>
-                    
-                    <!-- Filter by Time Range -->
                     <div class="form-group mt-3">
                         <label for="from-hour">Hora Desde</label>
                         <input type="time" class="form-control" id="from-hour" name="from_hour">
@@ -62,21 +74,17 @@
                         <label for="to-hour">Hora Hasta</label>
                         <input type="time" class="form-control" id="to-hour" name="to_hour">
                     </div>
-                
-                    <!-- Entry/Exit Filter -->
                     <div class="form-group mt-3">
                         <label for="entry-exit">Entrada/Salida</label>
-                        <select class="form-control" id="entry-exit" name="tipo_marcaje">
+                        <select class="form-control" id="entry-exit" name="entry_exit">
                             <option value="any">Cualquiera</option>
                             <option value="entrada">Entrada</option>
                             <option value="salida">Salida</option>
                         </select>
                     </div>
-                
-                    <!-- Condition Filter -->
                     <div class="form-group mt-3">
                         <label for="condition">Condición</label>
-                        <select class="form-control" id="condition" name="condicion">
+                        <select class="form-control" id="condition" name="condition">
                             <option value="any">Cualquiera</option>
                             <option value="duplicado">Duplicado</option>
                             <option value="saltado">Saltado</option>
@@ -84,35 +92,20 @@
                             <option value="invertir">Invertir</option>
                         </select>
                     </div>
-                    
-                    <!-- Apply Filters Button -->
                     <button type="submit" class="btn btn-primary mt-4">Aplicar Filtros</button>
                 </form>
-                
-
             </div>
 
-            <!-- Table Section -->
+            <!-- Table Section (larger column) -->
             <div class="col-lg-10">
                 <div class="scrollable-table">
                     <table class="table table-striped table-bordered custom-table">
                         <thead>
-                            <tr>
+                            <tr id="tableHeader">
                                 <th class="checkbox-cell"><input type="checkbox" onclick="toggleAllCheckboxes(this)"></th>
-                                {% for column in table_columns %}
-                                    <th>{{ column }}</th>
-                                {% endfor %}
                             </tr>
                         </thead>
-                        <tbody>
-                            {% for row in table_data %}
-                                <tr>
-                                    <td class="checkbox-cell"><input type="checkbox" class="row-checkbox"></td>
-                                    {% for cell in row %}
-                                        <td>{{ cell }}</td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
+                        <tbody id="csvTableBody">
                         </tbody>
                     </table>
                 </div>
@@ -122,28 +115,96 @@
 
 
 
-
-    <!-- JavaScript for toggling checkboxes -->
+    <!-- JS para funcionalidad -->
     <script>
+        // Toggle all checkboxes
         function toggleAllCheckboxes(source) {
-            const checkboxes = document.querySelectorAll('.row-checkbox');
-            checkboxes.forEach(checkbox => {
+            const checkboxes = document.getElementsByClassName('row-checkbox');
+            for (let checkbox of checkboxes) {
                 checkbox.checked = source.checked;
-            });
+            }
         }
+    
+        // Read and display CSV file
+        $(document).ready(function() {
+            // File selection logic commented out
+            $('#csvFileInput').on('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const csvText = e.target.result;
+                        displayCSV(csvText);
+                    };
+                    reader.readAsText(file);
+                }
+            });
+            
+    
+            // Archivo pasado en argumento en llamada
+            const filePath = "{{ '/app/temp/marcajes_original.csv' }}";
+            
+            // Read CSV from carga.py
+            $.ajax({
+                url: filePath,
+                method: 'GET',
+                dataType: 'text',
+                success: function(csvText) {
+                    displayCSV(csvText);
+                },
+                error: function() {
+                    alert("Error loading the file (modulo visualizacion)");
+                }
+            });
+    
+            // Function to display CSV data
+            function displayCSV(csvText) {
+                const rows = csvText.split("\n");
+                const $tableHeader = $('#tableHeader');
+                const $tableBody = $('#csvTableBody');
+    
+                // Clear any previous data
+                $tableHeader.find("th:gt(0)").remove();
+                $tableBody.empty();
+    
+                // Parse CSV and populate table
+                rows.forEach((row, rowIndex) => {
+                    const cells = row.split(",");
+                    const $row = $('<tr></tr>');
+    
+                    if (rowIndex === 0) {
+                        // Populate header
+                        cells.forEach(cell => {
+                            $tableHeader.append(`<th>${cell.trim()}</th>`);
+                        });
+                    } else {
+                        // Add checkbox cell
+                        $row.append('<td class="checkbox-cell"><input type="checkbox" class="row-checkbox"></td>');
+    
+                        // Populate data rows
+                        cells.forEach(cell => {
+                            $row.append(`<td>${cell.trim()}</td>`);
+                        });
+                        $tableBody.append($row);
+                    }
+                });
+            }
+        });
     </script>
+    
 
 
-
-    <!-- Styles for the table and filter layout -->
-    <!-- Pasar a STYLES.CSS eventualmente -->
+    <!-- SACAR A STYLES.CSS eventualmente -->
     <style>
+        /* General table and container styling */
         body {
             overflow-x: hidden;
         }
+
         .container-fluid {
             max-width: 100%;
         }
+
         .scrollable-table {
             max-height: 75vh;
             overflow-y: auto;
@@ -153,15 +214,20 @@
             border: 1px solid #ddd;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .filter-sidebar {
             max-width: 280px;
             padding-left: 15px;
             border-left: 1px solid #ddd;
         }
+
+        /* Custom table styling for vertical borders */
         .custom-table th, .custom-table td {
-            border-right: 1px solid #ddd;
-            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd; /* Vertical border for each column */
+            border-left: 1px solid #ddd;  /* Ensure consistent styling on both sides */
         }
+
+        /* Adjust rightmost cell to avoid double border */
         .custom-table th:last-child, .custom-table td:last-child {
             border-right: none;
         }

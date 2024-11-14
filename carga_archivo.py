@@ -16,56 +16,82 @@ def carga_archivo_func():
         # Solo carga html 
         return render_template("carga.html")
     else:
+        
+        ''' COMPRUEBA ESTADO DE ARCHIVO '''
+        
         # Comprueba archivo
         if 'file' not in request.files:
             flash('No se detecta archivo', "error")
-            return redirect(request.url)
+            return redirect('/carga')
         
-        file = request.files['file']
+        
+        archivo = request.files['file']
+        
             
-        if file.filename == '':
+        if archivo.filename == '':
             flash('No se detecta archivo', "error")
-            return redirect(request.url)
+            return redirect('/carga')
         
-        # Comprobar tambien por extension '.log'
-        # y contenido tabular ???
-        if not file.filename.endswith('.log'):
+        # Comprobar por extension, TIENE QUE SER '.log'
+        
+        if not archivo.filename.endswith('.log'):
             flash('Tipo de archivo invalido, Intente nuevamente con un archivo tipo .log', "error")
             return redirect(request.url)
+
+        
+        ''' MANEJA NOMBRE DEL ARCHIVO SUBIDO'''
         
         # werkzeug sanitiza nombre archivo
-        # filename = secure_filename(file.filename)
+        # filename = secure_filename(archivo.filename)
+        filename = archivo.filename
+        
+        # Siempre se usa el mismo nombre para el archivo durante el manejo y se guarda el nombre original en un archivo txt
+        # En /app/temp/...
+        with open("/app/temp/NOMBRE_ORIGINAL_ARCHIVO.txt", "w") as file:
+           file.write(filename)
         filename = 'marcajes_original.log'
+
+
+        ''' TRANSFORMA Y GUARDA ARCHIVO EN CONTAINER '''
+        
+        # SIMULA MOD DEP.
+        # Change the file extension to .csv
+        # PARA USAR JQuery en debug.
+        csv_filename = filename.replace('.log', '.csv')
+        
         
         # Guarda archivo en file_path 
-        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        # cambiar 'csv_filename' por 'filename' despues de debug
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], csv_filename)
+        # '/app/temp/"filename que se le asigna" '
+        print("Se va a guardar logs en file_path: ", file_path)
 
         try:
-            file.save(file_path)
+            archivo.save(file_path)
+            print("Se guarda archivo correctamente")
+            print(f"File saved to: {file_path}")
         except Exception as e:
-            print(f"Error saving file: {e}")
+            print(f"Error al guardar el archivo: {e}")
             flash('Error al subir archivo', "error")   
             return render_template("apology.html") # Por ahora
-            
         
-        flash('Archivo correctamente importado')
-        # Debug
-        print(f"File saved to: {file_path}")
-        # Para verlo dentro de container
+        
+        ''' Para ver archivo dentro de container'''
         # docker-compose exec -it flask_app /bin/bash
-        # Hacer que sea visible en IDE ??
-
+        # cd temp
         
-        # EJEMPLO DE MANEJO ARCHIVO
-        # Open and process the file from the saved location
-        with open(file_path, 'rb') as f:
-            file_content = f.read()
+        
+        
+        # Usuario ve este mensaje (Pero no se ve), Se ve despues de hacer una accion en vis
+        # flash('Archivo correctamente importado')
+        
+        
+        # LLama funcion de depuracion principal. Desde esta funcion de manejan varios tipos de depuracion. No esta en esta branch
+        file_path_depurado = depurar_archivo(file_path)
 
-        # LLama funcion de depuracion principal. Desde esta funcion de manejan varios tipos de depuracion
-        processed_file_path = depurar_archivo(file_path)
 
-        if processed_file_path:
-                flash('Archivo depurado correctamente')
+        # if processed_filepath:
+        if file_path:
                 return redirect('/visualizacion')
         else:
             flash('Error en la depuración del archivo', "error")
