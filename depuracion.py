@@ -9,7 +9,7 @@ def depurar_archivo(file_path):
         # marcaje = pd.read_csv(file_path, header= None, sep=',', usecols=[0, 2, 3, 5, 6], names=["Codigo", "entrada/salida", "rut", "hora", "minuto"])  
 
         marcaje = pd.read_csv(file_path, header= None, sep=',', 
-                      names=["Código", "a", "Entrada/Salida", "RUT","b", "Hora", "Minuto", "Día", "Mes", "Año", "c", "d", "e", "f", "g", "h", "i", "j", "k"])
+                      names=["Codigo", "a", "entrada/salida", "rut","b", "hora", "minuto", "día", "mes", "año", "c", "d", "e", "f", "g", "h", "i", "j", "k"])
 
         # Juntar hora y minuto en una sola columna
         # Antes de exportar archivo en siguiente modulo se dropea col 'Hora' y 'Error'
