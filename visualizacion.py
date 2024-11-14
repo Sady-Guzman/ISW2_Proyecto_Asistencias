@@ -23,8 +23,8 @@ def visualizar():
         
         # Seleccionar solo las cols que tienen info relevante.
         # El archivo que generan los relojes tiene varios campos que no se usan.
-        # 0: Codigo, 2: Entrada(1)/Salida(3), 3: RUT, 5: Hora, 6: Minuto, 7: Mes, 8: Dia, 9: Anho
-        df_filtrado = df.iloc[:, [0, 2, 3, 5, 6, 7, 8, 9]]
+        # 0: Codigo, 2: Entrada(1)/Salida(3), 3: RUT, 5: Hora, 6: Minuto, 7: Mes, 8: Dia, 9: Anho, 21: Estado/Error/Solucion
+        df_filtrado = df.iloc[:, [0, 2, 3, 5, 6, 7, 8, 9, 20]]
 
         # Prepare data for rendering in the template
         table_columns = df_filtrado.columns.tolist()
@@ -57,34 +57,38 @@ def apply_filters():
     file_path = '/app/temp/datos_procesados.csv'
     
     # Filtros estan en desarrollo. No aplica en MAIN BRANCH
-    if 1 == 1:
+    try:
+        # Load the CSV file with pandas
+        df = pd.read_csv(file_path)
+        
+        # Apply filters if they are provided
+        if rut_filter:
+            df = df[df['rut'] == rut_filter]
+        
+        if from_hour and to_hour:
+            df = df[(df['hora'] >= from_hour) & (df['hora'] <= to_hour)]
+        
+        if tipo_marcaje != 'any':
+            df = df[df['marcaje'] == tipo_marcaje]
+        
+        if condicion != 'any':
+            df = df[df['condicion'] == condicion]
+        
+        
+        # Agregar Filtro de columnas TODO
+        
+        # Seleccionar solo las cols que tienen info relevante.
+        # El archivo que generan los relojes tiene varios campos que no se usan.
+        # 0: Codigo, 2: Entrada(1)/Salida(3), 3: RUT, 5: Hora, 6: Minuto, 7: Mes, 8: Dia, 9: Anho, 21: Estado/Error/Solucion
+        df_filtrado = df.iloc[:, [0, 2, 3, 5, 6, 7, 8, 9, 20]]
+        
+        # Prepare data for rendering in the template
+        table_columns = df_filtrado.columns.tolist()
+        table_data = df_filtrado.values.tolist()
+        
+        # Render the filtered data back to the visualization page
+        return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data)
+    
+    except Exception as e:
         flash("La función de filtro aún está en construcción.", "error")
         return render_template("apology.html")
-    else:
-        try:
-            # Load the CSV file with pandas
-            df = pd.read_csv(file_path)
-            
-            # Apply filters if they are provided
-            if rut_filter:
-                df = df[df['rut'] == rut_filter]
-            
-            if from_hour and to_hour:
-                df = df[(df['hora'] >= from_hour) & (df['hora'] <= to_hour)]
-            
-            if tipo_marcaje != 'any':
-                df = df[df['marcaje'] == tipo_marcaje]
-            
-            if condicion != 'any':
-                df = df[df['condicion'] == condicion]
-            
-            # Prepare data for rendering in the template
-            table_columns = df.columns.tolist()
-            table_data = df.values.tolist()
-            
-            # Render the filtered data back to the visualization page
-            return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data)
-        
-        except Exception as e:
-            flash("La función de filtro aún está en construcción.", "error")
-            return render_template("apology.html")
