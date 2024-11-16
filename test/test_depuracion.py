@@ -7,18 +7,27 @@ import pytest
 from depuracion import depurar_archivo, duplicados, faltaSalida, marcaOpuesto  # Importar funciones del módulo
 
 @pytest.fixture
-def log_df():
+def log_df(tmp_path):
     """Fixture para cargar y estructurar el archivo .log"""
-    # Ruta del archivo de ejemplo
-    file_path = '../Documentacion/marcajes_08-01-24.log'
+    # Ruta temporal para el archivo de prueba
+    file_path = tmp_path / "marcajes_08-01-24.log"
+
+    # Crear contenido ficticio para el archivo .log
+    contenido_log = """001,,entrada,12345,,8,0,8,1,2024,,,,,,,,,
+                        002,,entrada,67890,,8,5,8,1,2024,,,,,,,,,
+                        003,,entrada,54321,,9,0,8,1,2024,,,,,,,,,
+                        001,,salida,12345,,18,0,8,1,2024,,,,,,,,,
+                        002,,salida,67890,,18,10,8,1,2024,,,,,,,,,
+                        """
+    # Escribir contenido en el archivo
+    file_path.write_text(contenido_log)
 
     # Definir columnas basadas en el formato del archivo .log
-    columns = ["Codigo", "a", "entrada/salida", "rut", "b", "hora", "minuto", "día", "mes", "año", 
+    columns = ["Codigo", "a", "entrada/salida", "rut", "b", "hora", "minuto", "día", "mes", "año",
                "c", "d", "e", "f", "g", "h", "i", "j", "k"]
 
     # Crear DataFrame a partir del archivo .log
-    log_content = [line.strip().split(',') for line in open(file_path, 'r', encoding='utf-8')]
-    df = pd.DataFrame(log_content, columns=columns)
+    df = pd.read_csv(file_path, names=columns)
 
     # Convertir columnas relevantes a tipos numéricos
     df["hora"] = df["hora"].astype(int)
@@ -26,7 +35,7 @@ def log_df():
     df["día"] = df["día"].astype(int)
     df["mes"] = df["mes"].astype(int)
     df["año"] = df["año"].astype(int)
-    df["entrada/salida"] = df["entrada/salida"].astype(int)
+    df["entrada/salida"] = df["entrada/salida"].astype(str)
 
     return df
 
