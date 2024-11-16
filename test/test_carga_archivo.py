@@ -32,9 +32,9 @@ def client():
             os.unlink(file_path)
 
 
-def test_subir_archivo_log_valido(client):
+def test_PSA_001(client):
     """
-    Prueba de subida de archivo con extensión válida (.log)
+    PSA-001: Prueba de subida de archivo con extensión válida (.log)
     """
     # Crear un archivo de prueba
     with open('registro.log', 'w') as f:
@@ -50,9 +50,9 @@ def test_subir_archivo_log_valido(client):
     assert b'/visualizacion' in response.data
 
 
-def test_sin_archivo(client):
+def test_PSA_002(client):
     """
-    Prueba de envío sin archivo adjunto
+    PSA-002: Prueba de envío sin archivo adjunto
     """
     response = client.post('/cargar', data={}, content_type='multipart/form-data')
 
@@ -60,11 +60,32 @@ def test_sin_archivo(client):
     with client.session_transaction() as session:
         flashed_messages = session.get('_flashes', [])
         assert ('error', 'No se detecta archivo') in flashed_messages
-
-
-def test_extension_invalida(client):
+        
+def test_PSA_003(client):
     """
-    Prueba con archivo de extensión no permitida.
+    PSA-003: Subir un archivo con nombre vacío
+    """
+    # Simular envío de archivo sin nombre en los datos del formulario
+    data = {
+        'file': (b'Contenido de prueba', '')  # Archivo con contenido, pero sin nombre
+    }
+
+    response = client.post('/cargar', data=data, content_type='multipart/form-data')
+
+    # Verificar redirección correcta
+    assert response.status_code == 302
+    assert response.location.endswith('/carga')
+
+    # Capturar mensajes flash desde la sesión
+    with client.session_transaction() as session:
+        flashed_messages = session.get('_flashes', [])
+        assert ('error', 'No se detecta archivo') in flashed_messages
+
+
+
+def test_PSA_004(client):
+    """
+    PSA-004: Prueba con archivo de extensión no permitida.
     """
     # Crear un archivo con extensión no válida.
     with open('archivo.txt', 'w') as f:
@@ -86,9 +107,9 @@ def test_extension_invalida(client):
 
 
 
-def test_guardado_nombre_original(client):
+def test_PSA_005(client):
     """
-    Verifica que el nombre original del archivo se guarde correctamente
+    PSA 005: Verifica que el nombre original del archivo se guarde correctamente
     """
     with open('registro.log', 'w') as f:
         f.write('Contenido de prueba')
@@ -108,9 +129,9 @@ def test_guardado_nombre_original(client):
     assert contenido == 'registro.log'
 
 
-def test_archivo_guardado_como_csv(client):
+def test_PSA_006(client):
     """
-    Verifica que el archivo subido se guarde como .csv después de procesarse
+    PSA 006: Verifica que el archivo subido se guarde como .csv después de procesarse
     """
     with open('registro.log', 'w') as f:
         f.write('Contenido de prueba')
