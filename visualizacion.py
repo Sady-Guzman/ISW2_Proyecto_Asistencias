@@ -1,5 +1,5 @@
 # visualizacion.py
-from flask import render_template, flash, redirect, Blueprint, current_app
+from flask import render_template, flash, redirect, Blueprint, current_app, send_file
 from helpers import user_login_required
 import pandas as pd
 import os
@@ -204,3 +204,34 @@ def apply_filters():
         print(f"Error: {e}")        
         flash("La función de filtro aún está en construcción.", "error")
         return render_template("apology.html")
+
+
+# FUNCION DE EXPORTAR DATAFRAME COMO CSV A HOST.
+# Usa send_file de Flask
+@visualizacion.route('/download_csv')
+@user_login_required
+def download_csv():
+
+    # Path to save the CSV file temporarily
+    # csv_file_path = '/app/temp/filtered_data.csv'
+    file_path = '/app/temp/datos_procesados.csv'
+    
+    # Check if the DataFrame exists in the filtered state (use the same filtering logic)
+    try:
+        # Example DataFrame creation (replace this with the actual filtered DataFrame)
+        df = pd.read_csv(file_path)
+        df_final = df.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
+        
+        # Save the DataFrame as a CSV
+        df_final.to_csv(file_path, index=False, header=False)
+        
+        # Send the file to the user for download
+        return send_file(file_path, 
+                         as_attachment=True, 
+                         download_name="filtered_data.csv",
+                         mimetype='text/csv')
+    except Exception as e:
+        print(f"Error while generating CSV: {e}")
+        flash("Error al generar el archivo CSV.", "error")
+        return redirect('/visualizacion')
+    
