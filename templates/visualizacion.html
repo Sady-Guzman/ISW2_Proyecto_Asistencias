@@ -121,7 +121,10 @@
                             {% endfor %}
                         </tbody> -->
                         <tbody>
-                            <form action="/process_selected_rows" method="POST">
+
+                            <!--<form id="process_selected_rows" action="/process_selected_rows" method="POST">-->
+
+                            <form id="process_selected_rows" action="/download_csv" method="POST">
                                 {% for idx, row in enumerate(table_data) %}
                                     <tr>
                                         <td class="checkbox-cell">
@@ -132,9 +135,10 @@
                                         {% endfor %}
                                     </tr>
                                 {% endfor %}
+                                <!--
                                 <div class="mt-3 text-end">
                                     <button href="/process_selected_rows" class="btn btn-primary">Procesar Seleccionados</button>
-                                </div>
+                                </div>-->
                             </form>
                         </tbody>
                     </table>
@@ -142,8 +146,15 @@
                 <p>Codigo: [1: Entrada] [3: Salida]</p>
                 <!-- DESCARGAR ARCHIVO - RESULTADO -->
                 <!-- Button to download CSV -->
+
+                 <!--
                 <div class="mt-3 text-end">
                     <a href="/download_csv" class="btn btn-primary">Descargar Archivo</a>
+                </div>
+                -->
+
+                <div class="mt-3 text-end">
+                    <button type="submit" form="process_selected_rows" class="btn btn-primary">Descargar Archivo</button>
                 </div>
                 
             </div>

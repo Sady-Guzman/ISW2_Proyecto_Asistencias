@@ -1,8 +1,10 @@
 # visualizacion.py
-from flask import render_template, flash, redirect, Blueprint, current_app, send_file
+from flask import render_template, flash, redirect, Blueprint, current_app, send_file, request
 from helpers import user_login_required
 import pandas as pd
 import os
+from validacion import validar
+
 
 visualizacion = Blueprint('visualizacion', __name__)
 
@@ -208,37 +210,60 @@ def apply_filters():
 
 # FUNCION DE EXPORTAR DATAFRAME COMO CSV A HOST.
 # Usa send_file de Flask
-@visualizacion.route('/download_csv')
+@visualizacion.route('/download_csv', methods=['GET', 'POST'])
 @user_login_required
 def download_csv():
-    
 
-    # Path to save the CSV file temporarily
-    # csv_file_path = '/app/temp/filtered_data.csv'
+
+    selected_rows = request.form.getlist('selected_rows')
     file_path = '/app/temp/datos_procesados.csv'
-    
-    # Check if the DataFrame exists in the filtered state (use the same filtering logic)
-    try:
-        # Example DataFrame creation (replace this with the actual filtered DataFrame)
-        df = pd.read_csv(file_path)
-        df_final = df.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
+    df = pd.read_csv(file_path)
+
+    if not selected_rows:
+
+        try:
+            
+            df_final = df.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
+            # Save the DataFrame as a CSV
+            df_final.to_csv(file_path, index=False, header=False)
+            # Send the file to the user for download
+            return send_file(file_path, 
+                            as_attachment=True, 
+                            download_name="filtered_data.csv",
+                            mimetype='text/csv')
         
-        # Save the DataFrame as a CSV
-        df_final.to_csv(file_path, index=False, header=False)
+        except Exception as e:
+            print(f"Error while generating CSV: {e}")
+            flash("Error al generar el archivo CSV.", "error")
+            return redirect('/visualizacion')
+
+    else:
+        try:
+            selected_indices = list(map(int, selected_rows))
+            print("indice:", selected_indices)
+
+            df_final = validar(df, selected_indices)
+
+            df_final = df_final.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
+            # Save the DataFrame as a CSV
+            df_final.to_csv(file_path, index=False, header=False)
+            # Send the file to the user for download
+            return send_file(file_path, 
+                            as_attachment=True, 
+                            download_name="filtered_data.csv",
+                            mimetype='text/csv')
         
-        # Send the file to the user for download
-        return send_file(file_path, 
-                         as_attachment=True, 
-                         download_name="filtered_data.csv",
-                         mimetype='text/csv')
-    except Exception as e:
-        print(f"Error while generating CSV: {e}")
-        flash("Error al generar el archivo CSV.", "error")
-        return redirect('/visualizacion')
+        except Exception as e:
+            print(f"Error while generating CSV: {e}")
+            flash("Error al generar el archivo CSV.", "error")
+            return redirect('/visualizacion')
+        
+
     
 
 # --------------------------------------------------------------------------------------------------------
 
+'''
 @visualizacion.route('/process_selected_rows', methods=['GET', 'POST'])
 @user_login_required
 def process_selected_rows():
@@ -260,6 +285,7 @@ def process_selected_rows():
         
         # Convert the selected row indices to integers
         selected_indices = list(map(int, selected_rows))
+        print("indice:", selected_indices)
         
         # Load the CSV file into a DataFrame
         df = pd.read_csv(file_path)
@@ -280,3 +306,4 @@ def process_selected_rows():
         flash("Error al procesar las filas seleccionadas.", "error")
         return redirect('/visualizacion')
 
+'''
