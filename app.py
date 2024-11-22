@@ -14,6 +14,7 @@ temp/datos_procesados.csv -> Nombre de archivo original despues de pasar por mod
 '''
 
 app = Flask(__name__)
+app.jinja_env.globals.update(enumerate=enumerate)
 app.config['DEBUG'] = True
 
 # Configure session to use filesystem (instead of signed cookies)

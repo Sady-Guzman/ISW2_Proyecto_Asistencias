@@ -22,7 +22,7 @@ def carga_archivo_func():
         # Comprueba archivo
         if 'file' not in request.files:
             flash('No se detecta archivo', "error")
-            return redirect('/carga')
+            return redirect('/cargar')
         
         
         archivo = request.files['file']
@@ -30,7 +30,7 @@ def carga_archivo_func():
             
         if archivo.filename == '':
             flash('No se detecta archivo', "error")
-            return redirect('/carga')
+            return redirect('/cargar')
         
         # Comprobar por extension, TIENE QUE SER '.log'
         

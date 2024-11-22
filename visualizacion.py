@@ -198,7 +198,7 @@ def apply_filters():
         table_data = df_filtrado.values.tolist()
         
         # Render the filtered data back to the visualization page
-        return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data)
+        return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data, enumerate=enumerate)
     
     except Exception as e:
         print(f"Error: {e}")        
@@ -211,6 +211,7 @@ def apply_filters():
 @visualizacion.route('/download_csv')
 @user_login_required
 def download_csv():
+    
 
     # Path to save the CSV file temporarily
     # csv_file_path = '/app/temp/filtered_data.csv'
@@ -235,3 +236,47 @@ def download_csv():
         flash("Error al generar el archivo CSV.", "error")
         return redirect('/visualizacion')
     
+
+# --------------------------------------------------------------------------------------------------------
+
+@visualizacion.route('/process_selected_rows', methods=['GET', 'POST'])
+@user_login_required
+def process_selected_rows():
+    """Process selected rows based on checkboxes."""
+    from flask import request
+
+    file_path = '/app/temp/datos_procesados.csv'
+    
+    print("LLEGA A process selected rows")
+    
+    try:
+        print("Entra a try")
+        # Retrieve selected row indices from the form
+        selected_rows = request.form.getlist('selected_rows')
+        
+        if not selected_rows:
+            flash("No se seleccionaron filas.", "warning")
+            return redirect('/visualizacion')
+        
+        # Convert the selected row indices to integers
+        selected_indices = list(map(int, selected_rows))
+        
+        # Load the CSV file into a DataFrame
+        df = pd.read_csv(file_path)
+        
+        # Select only the rows corresponding to the selected indices
+        df_selected = df.iloc[selected_indices]
+        
+        # Example: Save the selected rows as a new CSV (optional)
+        selected_file_path = '/app/temp/selected_data.csv'
+        # DEBUG
+        print("df_selcted.tocsv: selected_file_path <<< /app/temp/selected_data.csv ")
+        df_selected.to_csv(selected_file_path, index=False)
+        
+        # Example: Send the filtered DataFrame as a downloadable file
+        return send_file(selected_file_path, as_attachment=True, download_name="selected_data.csv")
+    except Exception as e:
+        print(f"Error while processing selected rows: {e}")
+        flash("Error al procesar las filas seleccionadas.", "error")
+        return redirect('/visualizacion')
+
