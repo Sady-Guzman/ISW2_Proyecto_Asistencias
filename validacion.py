@@ -77,5 +77,5 @@ def validar(df_corregido, indices):
         return df
     
     except Exception as e:
-        print(f"Error while processing selected rows: {e}")
+        print(f"Error en el proceso de correcion: {e}")
     

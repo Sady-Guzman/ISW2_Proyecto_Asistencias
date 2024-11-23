@@ -254,7 +254,7 @@ def download_csv():
                             mimetype='text/csv')
         
         except Exception as e:
-            print(f"Error while generating CSV: {e}")
+            print(f"Error al generar el archivo CSV: {e}")
             flash("Error al generar el archivo CSV.", "error")
             return redirect('/visualizacion')
         
