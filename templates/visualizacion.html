@@ -49,7 +49,7 @@
                 <form method="POST" action="{{ url_for('visualizacion.apply_filters') }}">
                     <!-- Filter by RUT -->
                     <div class="form-group">
-                        <label for="filter-rut">Filtrar por RUT</label>
+                        <label for="filter-rut">RUT</label>
                         <input type="text" class="form-control" id="filter-rut" name="rut_filter" placeholder="Ingrese RUT">
                     </div>
                     
@@ -78,11 +78,17 @@
                         <label for="condition">Condición</label>
                         <select class="form-control" id="condition" name="condicion">
                             <option value="any">Cualquiera</option>
+                            <option value="correcto">Correcto</option>
                             <option value="duplicado">Duplicado</option>
                             <option value="saltado">Saltado</option>
-                            <option value="correcto">Correcto</option>
                             <option value="invertir">Invertir</option>
                         </select>
+                    </div>
+
+                    <!-- Codigo horario trabajador Filter -->
+                    <div class="form-group mt-3">
+                        <label for="filter-rut">Código horario</label>
+                        <input type="text" class="form-control" id="filter-codigo" name="codigo_filter" placeholder="Ingrese codigo">
                     </div>
                     
                     <!-- Apply Filters Button -->
@@ -104,7 +110,7 @@
                                 {% endfor %}
                             </tr>
                         </thead>
-                        <tbody>
+                        <!-- <tbody>
                             {% for row in table_data %}
                                 <tr>
                                     <td class="checkbox-cell"><input type="checkbox" class="row-checkbox"></td>
@@ -113,9 +119,44 @@
                                     {% endfor %}
                                 </tr>
                             {% endfor %}
+                        </tbody> -->
+                        <tbody>
+
+                            <!--<form id="process_selected_rows" action="/process_selected_rows" method="POST">-->
+
+                            <form id="process_selected_rows" action="/download_csv" method="POST">
+                                {% for idx, row in enumerate(table_data) %}
+                                    <tr>
+                                        <td class="checkbox-cell">
+                                            <input type="checkbox" class="row-checkbox" name="selected_rows" value="{{ idx }}">
+                                        </td>
+                                        {% for cell in row %}
+                                            <td>{{ cell }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                                <!--
+                                <div class="mt-3 text-end">
+                                    <button href="/process_selected_rows" class="btn btn-primary">Procesar Seleccionados</button>
+                                </div>-->
+                            </form>
                         </tbody>
                     </table>
                 </div>
+                <p>Codigo: [1: Entrada] [3: Salida]</p>
+                <!-- DESCARGAR ARCHIVO - RESULTADO -->
+                <!-- Button to download CSV -->
+
+                 <!--
+                <div class="mt-3 text-end">
+                    <a href="/download_csv" class="btn btn-primary">Descargar Archivo</a>
+                </div>
+                -->
+
+                <div class="mt-3 text-end">
+                    <button type="submit" form="process_selected_rows" class="btn btn-primary">Descargar Archivo</button>
+                </div>
+                
             </div>
         </div>
     </div>
