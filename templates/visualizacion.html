@@ -210,6 +210,9 @@
                     histLink.href = histUrl;
                     histLink.download = "historial.csv";
                     histLink.click();
+
+                    // Redirige a la página principal inmediatamente
+                    window.location.href = '/';
                 }).catch(error => console.error(error));
             }, 1000);
         }).catch(error => {
