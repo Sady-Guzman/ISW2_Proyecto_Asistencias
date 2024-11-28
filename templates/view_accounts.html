@@ -23,11 +23,15 @@
                     <td class="text-start">{{ user[1] }}</td> <!-- Display rut -->
                     <td class="text-start">{{ user[2] }}</td> <!-- Display username -->
                     <td class="text-start">
-                        <!-- Form for deleting the user -->
-                        <form action="/delete_account" method="POST" style="display:inline;">
-                            <input type="hidden" name="user_id" value="{{ user[0] }}"> <!-- Send the user's ID -->
-                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-                        </form>
+                        <!-- Show delete button only if the username is NOT "admin" -->
+                        {% if user[2] != 'admin' %}
+                            <form action="/delete_account" method="POST" style="display:inline;">
+                                <input type="hidden" name="user_id" value="{{ user[0] }}"> <!-- Send the user's ID -->
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        {% else %}
+                            <span class="text-muted">Protegido</span>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
