@@ -4,7 +4,7 @@ from helpers import user_login_required
 import pandas as pd
 import os
 from validacion import validar
-
+from datetime import date
 
 visualizacion = Blueprint('visualizacion', __name__)
 
@@ -221,17 +221,9 @@ def download_csv():
 
     if not selected_rows:
 
-        try:
-            
+        try:          
             df_final = df.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
-            # Save the DataFrame as a CSV
-            df_final.to_csv(file_path, index=False, header=False)
-            # Send the file to the user for download
-            return send_file(file_path, 
-                            as_attachment=True, 
-                            download_name="filtered_data.csv",
-                            mimetype='text/csv')
-        
+
         except Exception as e:
             print(f"Error while generating CSV: {e}")
             flash("Error al generar el archivo CSV.", "error")
@@ -245,20 +237,34 @@ def download_csv():
             df_final = validar(df, selected_indices)
 
             df_final = df_final.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
-            # Save the DataFrame as a CSV
-            df_final.to_csv(file_path, index=False, header=False)
-            # Send the file to the user for download
-            return send_file(file_path, 
-                            as_attachment=True, 
-                            download_name="filtered_data.csv",
-                            mimetype='text/csv')
-        
+
         except Exception as e:
             print(f"Error al generar el archivo CSV: {e}")
             flash("Error al generar el archivo CSV.", "error")
             return redirect('/visualizacion')
+
+    # Save the DataFrame as a CSV
+    df_final.to_csv(file_path, index=False, header=False)
+
+    # Send the file to the user for download     
+    return send_file(file_path, 
+                    as_attachment=True, 
+                    download_name="filtered_data.csv",
+                    mimetype='text/csv')
         
 
+@visualizacion.route('/download_historial', methods=['GET'])
+def download_historial():
+    try:
+        file_path = '/app/temp/historial.csv'
+        fecha_actual = date.today().strftime("%d_%m_%Y")  # día_mes_año
+        nombre = f"Historial_{fecha_actual}.csv" # Crear el nombre del archivo 
+
+        return send_file(file_path, as_attachment=True, download_name=nombre)
+    except Exception as e:
+        print(f"Error: {e}")
+        flash("Error al descargar el historial.", "error")
+        return redirect('/visualizacion')
     
 
 # --------------------------------------------------------------------------------------------------------

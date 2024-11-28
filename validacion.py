@@ -1,11 +1,13 @@
 # validacion.py
 import pandas as pd
+from historial import crearHistorial, guardarHistorial
 
 def validar(df_corregido, indices):
 
     try:
 
         df = df_corregido
+        historial = pd.DataFrame()
 
         for i in indices:
 
@@ -27,7 +29,7 @@ def validar(df_corregido, indices):
                             # Si la fila siguiente está en `indices`, eliminarla de la lista
                             if i + 1 in indices:
                                 indices.remove(i + 1)
-
+    
                     elif error == "Salida duplicada":
                         print("Se revierte SALIDA DUPLICADA")
 
@@ -46,7 +48,6 @@ def validar(df_corregido, indices):
                         df.at[i, 'Hora'] = "00:00"      
                         df.at[i, "día"] += 1
                         
-
                     elif error == "Salida invertida a entrada":
                         print("Se revierte SALIDA INVERTIDA A ENTRADA")
 
@@ -70,9 +71,22 @@ def validar(df_corregido, indices):
                         # Si la fila anterior no está en `indices`, agregarla a la lista
                         if i - 1 not in indices:
                             indices.add(i - 1)
-                
+
+
+                # Si es una respuesta por duplicado no se guarda en el historial, pues no es la acción
+                if lista_errores[0] != "Entrada creada por duplicado" or lista_errores[0] != "Salida creada por duplicado":
+                    
+                    try:
+                        # Se va agregando nuevas filas y cambios
+                        nuevo_historial = crearHistorial(df.at[i, 'rut'], lista_errores)
+                    except Exception as e:
+                        print(f"Error al crear historial: {e}")
+                    
+                    historial = pd.concat([historial, nuevo_historial], ignore_index=True)
+
                 df.at[i, 'Error'] = "Correciones revertidas"
-                
+        
+        guardarHistorial(historial)
         
         return df
     

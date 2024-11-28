@@ -44,6 +44,14 @@ def login():
 
         session["user_id"] = rows[0][0]
         session["is_admin"] = False
+
+        # Guardar nombre de usuario
+        user = request.form.get("username")
+        temp_path = "/app/temp/username.txt"
+
+        # Guardar el nombre en el archivo
+        with open(temp_path, "w") as file:
+            file.write(user)
         
         return redirect("/")
 
