@@ -5,25 +5,33 @@
 {% endblock %}
 
 {% block main %}
-    <main class="container py-5 text-center">
-        <table class="table table-striped">
-            <thead>
+<main class="container py-5 text-center">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th class="text-start">ID de usuario</th>
+                <th class="text-start">RUT de usuario</th>
+                <th class="text-start">Nombre de usuario</th>
+                <th class="text-start">Acciones</th> <!-- New column for actions -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- JINJA FOR LOOP to build the table rows dynamically -->
+            {% for user in users %}
                 <tr>
-                    <th class="text-start">ID de usuario</th>
-                    <th class="text-start">RUT de usuario</th>
-                    <th class="text-start">Nombre de usuario</th>
+                    <td class="text-start">{{ user[0] }}</td> <!-- Display id -->
+                    <td class="text-start">{{ user[1] }}</td> <!-- Display rut -->
+                    <td class="text-start">{{ user[2] }}</td> <!-- Display username -->
+                    <td class="text-start">
+                        <!-- Form for deleting the user -->
+                        <form action="/delete_account" method="POST" style="display:inline;">
+                            <input type="hidden" name="user_id" value="{{ user[0] }}"> <!-- Send the user's ID -->
+                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                        </form>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                <!-- JINJA FOR LOOP to build the table rows dynamically -->
-                {% for user in users %}
-                    <tr>
-                        <td class="text-start">{{ user[0] }}</td> <!-- Display id -->
-                        <td class="text-start">{{ user[1] }}</td> <!-- Display rut -->
-                        <td class="text-start">{{ user[2] }}</td> <!-- Display username -->
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </main>
+            {% endfor %}
+        </tbody>
+    </table>
+</main>
 {% endblock %}
