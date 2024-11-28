@@ -75,14 +75,14 @@ def validar(df_corregido, selected_rows):
 
                         # Si la fila siguiente no está en `indices`, agregarla a la lista
                         if i + 1 not in indices:
-                            indices.add(i + 1)
+                            indices.append(i + 1)
 
                     elif error == "Salida creada por duplicado":
                         print("Se eliminara SALIDA CREADA POR DUPLICADO")
 
                         # Si la fila anterior no está en `indices`, agregarla a la lista
                         if i - 1 not in indices:
-                            indices.add(i - 1)
+                            indices.append(i - 1)
 
                 df.at[i, 'Error'] = "Correciones revertidas"
 

@@ -76,6 +76,7 @@ def crearHistorial(df, indices):
 
                 # Agregar la nueva fila al historial (sin envolverla en otro pd.DataFrame)
                 historial = pd.concat([historial, nueva_fila], ignore_index=True)
+            
 
         # Guardar el historial en el archivo CSV
         file_path = '/app/temp/historial.csv'
