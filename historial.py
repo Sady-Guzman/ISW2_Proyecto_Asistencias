@@ -65,7 +65,8 @@ def crearHistorial(df, indices):
 
         # Guardar el historial en el archivo CSV
         file_path = '/app/temp/historial.csv'
-        historial.to_csv(file_path, index=False, header=False)
+        #historial.to_csv(file_path, index=False, header=False)
+        historial.to_csv(file_path, index=False, header=['usuario', 'rut', 'fecha', 'error', 'cambio'])
         
     except Exception as e:
         print("Error al generar el historial: ", e)
