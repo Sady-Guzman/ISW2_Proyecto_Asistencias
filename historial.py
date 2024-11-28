@@ -15,13 +15,27 @@ def crearHistorial(df, indices):
         with open(temp_path, "r") as file:
             usuario = file.read()
 
+        
+
+        fecha_actual = date.today().strftime("%d/%m/%Y")  # día/mes/año
+        print(f"#########################################\nLISTA INDICES\n {indices}\n#########################################")
         for index, row in df.iterrows():
             errores = row['Error']
             correciones = []
 
-            if errores != "Ok" and index not in indices:
+            i1 = index - 1
+            i2 = index + 1
+
+            if (errores == "Salida creada por duplicado" and i1 not in indices):
+                print("Indices ", indices)
+                print("indice - 1 ", i1)
+            
+
+            if (errores != "Ok" and index not in indices) and (errores != "Salida creada por duplicado" and i1 not in indices) and (errores != "Entrada creada por duplicado" and i2 not in indices):
 
                 lista_errores = errores.split(", ")
+                print("Lista errores: ", lista_errores)
+                print("index actual", index)
                 
                 for error in lista_errores:
                     if error == "Entrada duplicada":
@@ -39,15 +53,15 @@ def crearHistorial(df, indices):
                     elif error == "Entrada invertida a salida":
                         print("Se reconoce en historial ENTRADA INVERTIDA A SALIDA")
                         correciones.append("Se invierte marcaje de tipo entrada a marcaje de tipo salida")
-                    elif error == "Entrada creada por duplicado" and (index + 1 not in indices):
+                    elif error == "Entrada creada por duplicado":
                         print("Se reconoce en historial ENTRADA CREADA POR DUPLICADO")
                         correciones.append("Entrada creada para corregir salida duplicada")
-                    elif error == "Salida creada por duplicado" and (index - 1 not in indices):
+                    elif error == "Salida creada por duplicado":
                         print("Se reconoce en historial SALIDA CREADA POR DUPLICADO")
                         correciones.append("Salida creada para corregir entrada duplicada")
+    
 
-
-                fecha_actual = date.today().strftime("%d/%m/%Y")  # día/mes/año
+                
                 cambios = f"Se hacen los siguientes cambios: {', '.join(correciones)}"
                 rut = row['rut']  # Acceso correcto a la columna 'rut'
 
@@ -65,6 +79,7 @@ def crearHistorial(df, indices):
 
         # Guardar el historial en el archivo CSV
         file_path = '/app/temp/historial.csv'
+
         #historial.to_csv(file_path, index=False, header=False)
         historial.to_csv(file_path, index=False, header=['usuario', 'rut', 'fecha', 'error', 'cambio'])
         

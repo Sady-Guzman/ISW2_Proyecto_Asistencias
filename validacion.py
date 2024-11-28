@@ -17,7 +17,7 @@ def validar(df_corregido, selected_rows):
 
     try:
 
-        df = df_corregido
+        df = df_corregido.copy()
 
         for i in indices:
 

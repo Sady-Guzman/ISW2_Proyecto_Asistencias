@@ -230,7 +230,7 @@ def download_csv():
             df_final = df.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
 
             crearHistorial(df, None)
-            
+
             # Save the DataFrame as a CSV
             df_final.to_csv(file_path, index=False, header=False)
 
@@ -247,9 +247,6 @@ def download_csv():
 
     else:
         try:
-            # selected_indices = list(map(int, selected_rows))
-            # print("indice:", selected_indices)
-
             # Convertir las filas seleccionadas en DataFrame
             columnas = ["Codigo", "entrada/salida", "rut", "hora", "minuto", "mes", "día", "año", "Error"]
             
@@ -258,6 +255,7 @@ def download_csv():
                 # print("FILAS SELECCIONADAS\n", selected_rows)
             except Exception as e:
                 print("Error al cargar Filas: ", e)
+                
             df_selected = pd.DataFrame(selected_rows, columns=columnas)
 
             df_final = validar(df, df_selected)
