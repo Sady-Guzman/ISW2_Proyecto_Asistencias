@@ -128,8 +128,9 @@
                                 {% for idx, row in enumerate(table_data) %}
                                     <tr>
                                         <td class="checkbox-cell">
-                                            <input type="checkbox" class="row-checkbox" name="selected_rows" value="{{ idx }}">
+                                            <input type="checkbox" class="row-checkbox" name="selected_rows" value='{{ row | tojson }}'>
                                         </td>
+
                                         {% for cell in row %}
                                             <td>{{ cell }}</td>
                                         {% endfor %}

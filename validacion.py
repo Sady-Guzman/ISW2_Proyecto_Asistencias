@@ -1,13 +1,23 @@
 # validacion.py
 import pandas as pd
-from historial import crearHistorial, guardarHistorial
+from historial import crearHistorial
 
-def validar(df_corregido, indices):
+def validar(df_corregido, selected_rows):
+
+    # Combina las columnas que quieres usar como identificadores
+    cols_identificadores = ["Codigo", "entrada/salida", "rut", "hora", "minuto", "mes", "día", "año", "Error"]
+
+    # Filtra el DataFrame para obtener las filas que coincidan
+    indices = []
+    for _, selected_row in selected_rows.iterrows():
+        mask = (df_corregido[cols_identificadores] == selected_row[cols_identificadores]).all(axis=1)
+        indices.extend(df_corregido[mask].index.tolist())
+
+    print("Indices: ", indices)
 
     try:
 
         df = df_corregido
-        historial = pd.DataFrame()
 
         for i in indices:
 
@@ -38,7 +48,9 @@ def validar(df_corregido, indices):
                             print(f"Eliminando fila {i - 1} (Salida que sigue a la Entrada duplicada)")
                             df.drop(index=i - 1, inplace=True)
 
-                        # No hace falta verificar
+                        # Si la fila anterior está en `indices`, eliminarla de la lista
+                        if i - 1 in indices:
+                            indices.remove(i - 1)
 
                     elif error == "Salida automatica corregida":
                         print("Se revierte correcion SALIDA AUTOMATICA")
@@ -72,21 +84,10 @@ def validar(df_corregido, indices):
                         if i - 1 not in indices:
                             indices.add(i - 1)
 
-
-                # Si es una respuesta por duplicado no se guarda en el historial, pues no es la acción
-                if lista_errores[0] != "Entrada creada por duplicado" or lista_errores[0] != "Salida creada por duplicado":
-                    
-                    try:
-                        # Se va agregando nuevas filas y cambios
-                        nuevo_historial = crearHistorial(df.at[i, 'rut'], lista_errores)
-                    except Exception as e:
-                        print(f"Error al crear historial: {e}")
-                    
-                    historial = pd.concat([historial, nuevo_historial], ignore_index=True)
-
                 df.at[i, 'Error'] = "Correciones revertidas"
-        
-        guardarHistorial(historial)
+
+    
+        crearHistorial(df_corregido, indices)               
         
         return df
     

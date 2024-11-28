@@ -5,6 +5,8 @@ import pandas as pd
 import os
 from validacion import validar
 from datetime import date
+import json
+from historial import crearHistorial
 
 visualizacion = Blueprint('visualizacion', __name__)
 
@@ -215,7 +217,10 @@ def apply_filters():
 def download_csv():
 
 
+    # Recuperar filas seleccionadas como JSON
     selected_rows = request.form.getlist('selected_rows')
+    # print("Contenido recibido en selected_rows:", selected_rows)
+
     file_path = '/app/temp/datos_procesados.csv'
     df = pd.read_csv(file_path)
 
@@ -224,6 +229,17 @@ def download_csv():
         try:          
             df_final = df.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
 
+            crearHistorial(df, None)
+            
+            # Save the DataFrame as a CSV
+            df_final.to_csv(file_path, index=False, header=False)
+
+            # Send the file to the user for download     
+            return send_file(file_path, 
+                            as_attachment=True, 
+                            download_name="filtered_data.csv",
+                            mimetype='text/csv')
+
         except Exception as e:
             print(f"Error while generating CSV: {e}")
             flash("Error al generar el archivo CSV.", "error")
@@ -231,26 +247,39 @@ def download_csv():
 
     else:
         try:
-            selected_indices = list(map(int, selected_rows))
-            print("indice:", selected_indices)
+            # selected_indices = list(map(int, selected_rows))
+            # print("indice:", selected_indices)
 
-            df_final = validar(df, selected_indices)
+            # Convertir las filas seleccionadas en DataFrame
+            columnas = ["Codigo", "entrada/salida", "rut", "hora", "minuto", "mes", "día", "año", "Error"]
+            
+            try:
+                selected_rows = [json.loads(row) for row in selected_rows]
+                # print("FILAS SELECCIONADAS\n", selected_rows)
+            except Exception as e:
+                print("Error al cargar Filas: ", e)
+            df_selected = pd.DataFrame(selected_rows, columns=columnas)
+
+            df_final = validar(df, df_selected)
+            print("YA PASAMOS VALIDACIÓN")
 
             df_final = df_final.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
+            print("YA SE GUARDO LAS FILAS ELEGIDAS")
+
+            # Save the DataFrame as a CSV
+            df_final.to_csv(file_path, index=False, header=False)
+
+            # Send the file to the user for download     
+            return send_file(file_path, 
+                            as_attachment=True, 
+                            download_name="filtered_data.csv",
+                            mimetype='text/csv')
 
         except Exception as e:
             print(f"Error al generar el archivo CSV: {e}")
             flash("Error al generar el archivo CSV.", "error")
             return redirect('/visualizacion')
 
-    # Save the DataFrame as a CSV
-    df_final.to_csv(file_path, index=False, header=False)
-
-    # Send the file to the user for download     
-    return send_file(file_path, 
-                    as_attachment=True, 
-                    download_name="filtered_data.csv",
-                    mimetype='text/csv')
         
 
 @visualizacion.route('/download_historial', methods=['GET'])
