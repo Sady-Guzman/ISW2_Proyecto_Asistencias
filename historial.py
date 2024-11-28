@@ -23,19 +23,12 @@ def crearHistorial(df, indices):
             errores = row['Error']
             correciones = []
 
-            i1 = index - 1
-            i2 = index + 1
-
-            if (errores == "Salida creada por duplicado" and i1 not in indices):
-                print("Indices ", indices)
-                print("indice - 1 ", i1)
-            
-
-            if (errores != "Ok" and index not in indices) and (errores != "Salida creada por duplicado" and i1 not in indices) and (errores != "Entrada creada por duplicado" and i2 not in indices):
+            if ((errores != "Ok" and index not in indices) and \
+                (errores != "Salida creada por duplicado") and (errores != "Entrada creada por duplicado")):
 
                 lista_errores = errores.split(", ")
-                print("Lista errores: ", lista_errores)
-                print("index actual", index)
+                # print("Lista errores: ", lista_errores)
+                # print("index actual", index)
                 
                 for error in lista_errores:
                     if error == "Entrada duplicada":
@@ -53,12 +46,6 @@ def crearHistorial(df, indices):
                     elif error == "Entrada invertida a salida":
                         print("Se reconoce en historial ENTRADA INVERTIDA A SALIDA")
                         correciones.append("Se invierte marcaje de tipo entrada a marcaje de tipo salida")
-                    elif error == "Entrada creada por duplicado":
-                        print("Se reconoce en historial ENTRADA CREADA POR DUPLICADO")
-                        correciones.append("Entrada creada para corregir salida duplicada")
-                    elif error == "Salida creada por duplicado":
-                        print("Se reconoce en historial SALIDA CREADA POR DUPLICADO")
-                        correciones.append("Salida creada para corregir entrada duplicada")
     
 
                 
@@ -76,7 +63,29 @@ def crearHistorial(df, indices):
 
                 # Agregar la nueva fila al historial (sin envolverla en otro pd.DataFrame)
                 historial = pd.concat([historial, nueva_fila], ignore_index=True)
-            
+
+            elif (errores == "Salida creada por duplicado" and index - 1 not in indices) or (errores == "Entrada creada por duplicado" and index + 1 not in indices):
+                    print("Hola")
+                    if errores == "Entrada creada por duplicado":
+                        print("Se reconoce en historial ENTRADA CREADA POR DUPLICADO")
+                        correciones.append("Entrada creada para corregir salida duplicada")
+                    elif errores == "Salida creada por duplicado":
+                        print("Se reconoce en historial SALIDA CREADA POR DUPLICADO")
+                        correciones.append("Salida creada para corregir entrada duplicada")
+
+                    cambios = f"Se hacen los siguientes cambios: {', '.join(correciones)}"
+                    rut = row['rut']  # Acceso correcto a la columna 'rut'
+
+                    # Crear una nueva fila como DataFrame
+                    nueva_fila = pd.DataFrame([{
+                        'usuario': usuario,
+                        'rut': rut,
+                        'fecha': fecha_actual,
+                        'error': errores,
+                        'cambio': cambios
+                    }])
+
+                    historial = pd.concat([historial, nueva_fila], ignore_index=True)
 
         # Guardar el historial en el archivo CSV
         file_path = '/app/temp/historial.csv'
