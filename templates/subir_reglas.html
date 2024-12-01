@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Carga horarios
+{% endblock %}
+
+{% block main %}
+    <form action="/subir_reglas" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <h2>Cargar horarios de trabajadores</h2>
+        </div>
+
+        <!-- File input field -->
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Seleccionar archivo para cargar:</label>
+            <input class="form-control" type="file" id="formFile" name="file">
+        </div>
+
+        <!-- Submit button -->
+        <div class="mb-3">
+            <button class="btn btn-primary" type="submit">Cargar Archivo</button>
+        </div>
+    </form>
+{% endblock %}

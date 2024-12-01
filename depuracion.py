@@ -16,7 +16,7 @@ def depurar_archivo(file_path):
         marcaje['Hora'] = marcaje['hora'].astype(str).str.zfill(2) + ':' + marcaje['minuto'].astype(str).str.zfill(2)       
         
         
-        ruta_reglas = "/app/horarios_mes_actual.csv"
+        ruta_reglas = "/app/horario_mensual/horarios_creados.csv"
         # names_reglas = ["Codigo", "nombre", "año", "mes", "entrada", "salida", "horaEn", "minutoEn", "horaSal", "minutoSal"]
         reglas = pd.read_csv(ruta_reglas, sep=';').dropna(axis='columns', how='all')
         

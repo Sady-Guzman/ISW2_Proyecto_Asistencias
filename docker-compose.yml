@@ -12,8 +12,9 @@ services:
       - DATABASE_URL=postgresql://postgres:domino@db:5432/postgres  # Use service name 'db' for PostgreSQL
     depends_on:
       - db
-    # profiles:
-    #   - testing
+    volumes:
+      - ./horario_mensual:/app/horario_mensual # Persistente para guardar horarios que cambian cada mes -- chmod 777 /horario_mensual
+
 
   db:
     image: postgres:latest
@@ -59,3 +60,4 @@ services:
 
 volumes:
   postgres_data:
+  horario_mensual:
