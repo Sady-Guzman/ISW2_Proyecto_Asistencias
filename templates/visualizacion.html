@@ -88,7 +88,12 @@
                     <!-- Filter by Day -->
                     <div class="form-group mt-3">
                         <label for="filter-day">Día</label>
-                        <input type="text" class="form-control" id="filter-day" name="day_filter" placeholder="Ingrese día (ejemplo: 1, 2, ... 31)">
+                        <select class="form-control" id="filter-day" name="day_filter">
+                            <option value="">Todos</option>
+                            {% for day in distinct_days %}
+                                <option value="{{ day }}">{{ day }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
 
                     <!-- Codigo horario trabajador Filter -->

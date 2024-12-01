@@ -34,7 +34,11 @@ def visualizar():
         table_columns = df_filtrado.columns.tolist()
         table_data = df_filtrado.values.tolist()
         
-        return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data)
+        # Extract distinct days for day filter
+        df['día'] = df['día'].astype(str)  # Ensure days are strings
+        distinct_days = sorted(df['día'].unique())  # Sorted for user-friendly display
+        
+        return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data, distinct_days=distinct_days)
     else:
         flash("Archivo no disponible. Por favor importar archivo.", "error")
         return redirect('/cargar')
@@ -187,6 +191,10 @@ def apply_filters():
             df = df[df['Codigo'] == codigo_filter]
 
         
+        # Extract distinct days for day filter
+        df['día'] = df['día'].astype(str)  # Ensure days are strings
+        distinct_days = sorted(df['día'].unique())  # Sorted for user-friendly display
+        
         # Apply the day filter if provided
         if day_filter:
             print("Day filter entered:", day_filter)
@@ -214,7 +222,7 @@ def apply_filters():
         table_data = df_filtrado.values.tolist()
         
         # Render the filtered data back to the visualization page
-        return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data, enumerate=enumerate)
+        return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data, distinct_days=distinct_days, enumerate=enumerate)
     
     except Exception as e:
         print(f"Error: {e}")        
