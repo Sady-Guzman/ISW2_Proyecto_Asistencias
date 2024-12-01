@@ -101,7 +101,7 @@ def duplicados(marcaje):
                 
             ultima_accion = fila_actual['entrada/salida']
 
-    entrada = entrada.sort_values(by=['día', 'Hora']).reset_index(drop=True)
+    entrada = entrada.sort_values(by=['día', 'Hora', 'rut']).reset_index(drop=True)
 
     nuevoDf = []
 
@@ -136,7 +136,7 @@ def duplicados(marcaje):
     return entrada
 
 def faltaSalida(marcaje, reglas):
-    salida =  marcaje
+    salida =  marcaje.copy()
 
     for  i, row in salida.iterrows():
 
@@ -170,7 +170,7 @@ def faltaSalida(marcaje, reglas):
     return salida
 
 def marcaOpuesto(marcaje, reglas):
-    df = marcaje
+    df = marcaje.copy()
 
     for  i, row in df.iterrows():
         
