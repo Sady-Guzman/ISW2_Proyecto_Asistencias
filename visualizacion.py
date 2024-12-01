@@ -41,9 +41,6 @@ def visualizar():
 
     
 
-''' FUNC DE FILTROS PENDIENTE'''
-
-''' Version en desarrollo '''
 
 @visualizacion.route('/apply_filters', methods=['POST'])
 @user_login_required
@@ -58,6 +55,8 @@ def apply_filters():
     tipo_marcaje = request.form.get('tipo_marcaje')
     condicion = request.form.get('condicion')
     codigo_filter = request.form.get('codigo_filter')
+    day_filter = request.form.get('day_filter')
+
 
     file_path = '/app/temp/datos_procesados.csv'
     
@@ -186,6 +185,19 @@ def apply_filters():
             # Convert 'Codigo' column to string for comparison
             df['Codigo'] = df['Codigo'].astype(str)
             df = df[df['Codigo'] == codigo_filter]
+
+        
+        # Apply the day filter if provided
+        if day_filter:
+            print("Day filter entered:", day_filter)
+            try:
+                # Convert the 'dia' column to string for filtering
+                df['día'] = df['día'].astype(str)
+                df = df[df['día'] == day_filter]
+            except Exception as e:
+                print(f"Error filtering by day: {e}")
+                flash("Error al filtrar por día.", e)
+                return render_template("apology.html")
         
 
 
