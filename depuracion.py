@@ -53,6 +53,7 @@ def depurar_archivo(file_path):
     ''' FALTA SALIDA'''
     try:
         marcaje = faltaSalida(marcaje, reglas)
+        marcaje = marcaje.sort_values(by=['día', 'Hora', 'rut']).reset_index(drop=True)
     except Exception as e:
         print(f"Error DEPURACION - proceso FALTA SALIDA: {e}")
         return None
@@ -66,17 +67,9 @@ def depurar_archivo(file_path):
     
     try:
         # Se termina la depuración y se eliminan las columnas que no sirven
-        # marcaje = marcaje.drop(columns=['hora', 'minuto']) 
-
+        
         data = marcaje
         # data = data.dropna()
-
-        # Return processed data or save it to a new file
-        # processed_file_path = file_path.replace(".log", "_processed.csv")
-        # data.to_csv(processed_file_path, index=False)
-        # return processed_file_path  # Return path of processed file
-
-        
 
         # Save the DataFrame to a CSV file
         path_temp = '/app/temp/datos_procesados.csv'
@@ -162,7 +155,7 @@ def registraSalida(marcaje, indice):
 
         marcaje.at[indice, 'cierre'] = "Tiene cierre"
         marcaje.at[i, 'cierre'] = "Tiene cierre"
-        return  # Salida encontrada, no necesita recursión
+        return  # Salida encontrada
 
     # Busca la siguiente salida válida
     while i < len(marcaje.index):
@@ -177,38 +170,45 @@ def registraSalida(marcaje, indice):
     return
 
 def faltaSalida(marcaje, reglas):
-    salida =  marcaje.copy()
+    salida = marcaje.copy()
 
-    for  i, row in salida.iterrows():
+    for i, row in salida.iterrows():
 
         error = 'Salida automatica corregida'
 
-        if (row['Hora'] == '00:00'):
-            if(salida.at[i, 'Error'] == 'Ok'):
-                salida.at[i, 'Error'] = error
-            else:
-                salida.at[i, 'Error'] += f", {error}"
-
+        # Si el registro es una entrada y no tiene salida
+        if row['entrada/salida'] == 1 and row['cierre'] == "No tiene cierre":
+            
             codigoHorario = row['Codigo']
             
-            # Se procede a arreglar reemplazando el horario por el tiempo esperado de salida según reglamento  
-            for j, row2 in reglas.iterrows():
-                if (codigoHorario == row2['Codigo']):
-                    
-                    HorarioSalida = row2['salida']
-                    horaSalida = row2['horaSal']
-                    minutoSalida = row2['minutoSal']
+            # Buscar el horario correspondiente en reglas
+            regla = reglas[reglas['Codigo'] == codigoHorario]
+            if not regla.empty:
+                HorarioSalida = regla.iloc[0]['salida']
+                horaSalida = regla.iloc[0]['horaSal']
+                minutoSalida = regla.iloc[0]['minutoSal']
 
-                    break
+                # Si la hora de salida por regla es mayor que la hora actual de la fila (sale el mismo día)
+                if horaSalida > row['hora'] or (horaSalida == row['hora'] and minutoSalida > row['minuto']):
+                    # Actualizar fila que no tiene cierre
+                    salida.at[i, 'cierre'] = "Tiene cierre"
 
-            salida.at[i, 'hora'] = horaSalida
-            salida.at[i, 'minuto'] = minutoSalida
-            salida.at[i, 'Hora'] = HorarioSalida      
-            salida.at[i, "día"] -= 1    
+                    # Crear nueva fila y añadirla al DataFrame
+                    nueva_fila = row.copy()
+                    nueva_fila['entrada/salida'] = 3
+                    nueva_fila['hora'] = horaSalida
+                    nueva_fila['minuto'] = minutoSalida
+                    nueva_fila['Hora'] = HorarioSalida         
+                    nueva_fila['Error'] = error
+                    nueva_fila['cierre'] = "Tiene cierre"
 
-    # salida = salida.sort_values(by=['día', 'Hora']).reset_index(drop=True)
+                    salida = pd.concat([salida, pd.DataFrame([nueva_fila])], ignore_index=True)
+
+    # Ordenar el DataFrame por día y hora
+    salida = salida.sort_values(by=['día', 'Hora', 'rut']).reset_index(drop=True)
     
     return salida
+
 
 def marcaOpuesto(marcaje, reglas):
     df = marcaje.copy()
@@ -230,7 +230,9 @@ def marcaOpuesto(marcaje, reglas):
                 break
         
         # Buscar entrada con una ventanad de 30 minutos en donde se marca salida y corregir
-        if (row['hora'] == horaEntrada and (minutoEntrada - 10) <= row['minuto'] and  row['minuto'] <= (minutoEntrada + 30) and rut == row['rut'] and row['entrada/salida'] == 3 and row['Error'] == "Ok"):
+        if (row['hora'] == horaEntrada and (minutoEntrada - 10) <= row['minuto'] and  row['minuto'] <= (minutoEntrada + 30) and rut == row['rut'] 
+            and row['entrada/salida'] == 3 and row['Error'] == "Ok" and row['cierre'] != "Tiene cierre"):
+
             df.at[i, 'entrada/salida'] = 1
             if (row['Error'] == 'Ok'):
                 df.at[i, 'Error'] = "Salida invertida a entrada"
@@ -238,7 +240,9 @@ def marcaOpuesto(marcaje, reglas):
                 df.at[i, 'Error'] += ", Salida invertida a entrada"
 
         # Buscar salida con una ventana de 10 minutos en donde se marca entrada y corregir
-        if (row['hora'] == horaSalida and (minutoSalida - 10) <= row['minuto'] and  row['minuto'] <= (minutoSalida + 10) and rut == row['rut'] and row['entrada/salida'] == 1 and row['Error'] == "Ok"):
+        if (row['hora'] == horaSalida and (minutoSalida - 10) <= row['minuto'] and  row['minuto'] <= (minutoSalida + 10) and rut == row['rut'] 
+            and row['entrada/salida'] == 1 and row['Error'] == "Ok" and row['cierre'] != "Tiene cierre"):
+
             df.at[i, 'entrada/salida'] = 3
 
             if (row['Error'] == 'Ok'):

@@ -55,10 +55,13 @@ def validar(df_corregido, selected_rows):
                     elif error == "Salida automatica corregida":
                         print("Se revierte correcion SALIDA AUTOMATICA")
 
-                        df.at[i, 'hora'] = "00"
-                        df.at[i, 'minuto'] = "00"
-                        df.at[i, 'Hora'] = "00:00"      
-                        df.at[i, "día"] += 1
+                        # Eliminar fila
+                        df.drop(index = i, inplace=True)
+
+                        # df.at[i, 'hora'] = "00"
+                        # df.at[i, 'minuto'] = "00"
+                        # df.at[i, 'Hora'] = "00:00"      
+                        # df.at[i, "día"] += 1
                         
                     elif error == "Salida invertida a entrada":
                         print("Se revierte SALIDA INVERTIDA A ENTRADA")

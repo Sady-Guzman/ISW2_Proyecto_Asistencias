@@ -18,7 +18,7 @@ def crearHistorial(df, indices):
         
 
         fecha_actual = date.today().strftime("%d/%m/%Y")  # día/mes/año
-        print(f"#########################################\nLISTA INDICES\n {indices}\n#########################################")
+        # print(f"#########################################\nLISTA INDICES\n {indices}\n#########################################")
         for index, row in df.iterrows():
             errores = row['Error']
             correciones = []
@@ -39,7 +39,8 @@ def crearHistorial(df, indices):
                         correciones.append("Se crea una entrada para salida duplicada")
                     elif error == "Salida automatica corregida":
                         print("Se reconoce en historial SALIDA AUTOMATICA")
-                        correciones.append(f"Se cambia hora de salida 00:00 a hora de salida de reglas ({row['hora']})")
+                        # correciones.append(f"Se cambia hora de salida 00:00 a hora de salida de reglas ({row['hora']})")
+                        correciones.append(f"Se crea hora de salida según reglas ({row['hora']})")
                     elif error == "Salida invertida a entrada":
                         print("Se reconoce en historial SALIDA INVERTIDA A ENTRADA")
                         correciones.append("Se invierte marcaje de tipo salida a marcaje de tipo entrada")
@@ -65,7 +66,6 @@ def crearHistorial(df, indices):
                 historial = pd.concat([historial, nueva_fila], ignore_index=True)
 
             elif (errores == "Salida creada por duplicado" and index - 1 not in indices) or (errores == "Entrada creada por duplicado" and index + 1 not in indices):
-                    print("Hola")
                     if errores == "Entrada creada por duplicado":
                         print("Se reconoce en historial ENTRADA CREADA POR DUPLICADO")
                         correciones.append("Entrada creada para corregir salida duplicada")

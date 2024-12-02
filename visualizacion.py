@@ -27,7 +27,7 @@ def visualizar():
         
         # Seleccionar solo las cols que tienen info relevante.
         # El archivo que generan los relojes tiene varios campos que no se usan.
-        # 0: Codigo, 2: Entrada(1)/Salida(3), 3: RUT, 5: Hora, 6: Minuto, 7: Mes, 8: Dia, 9: Anho, 21: Estado/Error/Solucion
+        # 0: Codigo, 2: Entrada(1)/Salida(3), 3: RUT, 5: Hora, 6: Minuto, 7: Mes, 8: Dia, 9: Anho, 20: Estado/Error/Solucion
         df_filtrado = df.iloc[:, [0, 2, 3, 5, 6, 7, 8, 9, 20]]
 
         # Prepare data for rendering in the template
@@ -272,11 +272,13 @@ def download_csv():
             
             try:
                 selected_rows = [json.loads(row) for row in selected_rows]
-                # print("FILAS SELECCIONADAS\n", selected_rows)
+                print("FILAS SELECCIONADAS\n", selected_rows)
             except Exception as e:
                 print("Error al cargar Filas: ", e)
                 
             df_selected = pd.DataFrame(selected_rows, columns=columnas)
+            # Convertir la columna 'día' a tipo entero
+            df_selected["día"] = df_selected["día"].astype(int)
 
             df_final = validar(df, df_selected)
             print("YA PASAMOS VALIDACIÓN")
