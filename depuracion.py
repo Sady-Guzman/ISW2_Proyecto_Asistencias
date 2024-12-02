@@ -15,10 +15,13 @@ def depurar_archivo(file_path):
         # Antes de exportar archivo en siguiente modulo se dropea col 'Hora' y 'Error'
         marcaje['Hora'] = marcaje['hora'].astype(str).str.zfill(2) + ':' + marcaje['minuto'].astype(str).str.zfill(2)       
         
-        
-        ruta_reglas = "/app/horario_mensual/horarios_creados.csv"
-        # names_reglas = ["Codigo", "nombre", "año", "mes", "entrada", "salida", "horaEn", "minutoEn", "horaSal", "minutoSal"]
-        reglas = pd.read_csv(ruta_reglas, sep=';').dropna(axis='columns', how='all')
+        try:
+            ruta_reglas = "/app/horario_mensual/horarios_creados.csv"
+            # names_reglas = ["Codigo", "nombre", "año", "mes", "entrada", "salida", "horaEn", "minutoEn", "horaSal", "minutoSal"]
+            reglas = pd.read_csv(ruta_reglas, sep=',').dropna(axis='columns', how='all')
+        except Exception as e:
+            print(f"Error al cargar archivo de reglas {e}")
+            return None
         
     except Exception as e:
             print(f"Error DEPURACION - Crea DF con contenido de archivo subido: {e}")
@@ -31,6 +34,20 @@ def depurar_archivo(file_path):
         marcaje = duplicados(marcaje)
     except Exception as e:
         print(f"Error DEPURACION - proceso DUPLICADOS: {e}")
+        return None
+    
+    '''REVISION DE SALIDAS'''
+    try:
+       marcaje['cierre'] = "No tiene cierre"
+       marcaje = marcaje.sort_values(by=['rut', 'día', 'Hora']).reset_index(drop=True)
+
+       for indice in range(len(marcaje.index)):
+        if marcaje.at[indice, 'entrada/salida'] == 1:  # Solo evalúa entradas
+            registraSalida(marcaje, indice)
+
+        marcaje = marcaje.sort_values(by=['día', 'Hora', 'rut']).reset_index(drop=True)
+    except Exception as e:
+        print(f"Error DEPURACION - proceso TIENE SALIDA: {e}")
         return None
     
     ''' FALTA SALIDA'''
@@ -89,13 +106,15 @@ def duplicados(marcaje):
             fila_actual = group.iloc[i]
             fila_siguiente = group.iloc[i + 1]
             
-            # Verificar si hay entradas duplicadas sin salida entre ellas
-            if (fila_actual['entrada/salida'] == 1 and fila_siguiente['entrada/salida'] == 1 and ultima_accion != 3):
+            # Verificar si hay entradas duplicadas sin salida entre ellas y son el mismo día
+            if (fila_actual['entrada/salida'] == 1 and fila_siguiente['entrada/salida'] == 1 and ultima_accion != 3 and 
+                fila_actual['día'] == fila_siguiente['día']):
                 # Marcar como entrada duplicada
                 entrada.loc[group.index[i + 1], 'Error'] = 'Entrada duplicada'
 
-            # Verificar si hay salidas duplicadas sin entrada entre ellas
-            elif (fila_actual['entrada/salida'] == 3 and fila_siguiente['entrada/salida'] == 3 and ultima_accion != 1):
+            # Verificar si hay salidas duplicadas sin entrada entre ellas y son el mismo día
+            elif (fila_actual['entrada/salida'] == 3 and fila_siguiente['entrada/salida'] == 3 and ultima_accion != 1 and 
+                  fila_actual['día'] == fila_siguiente['día']):
                 # Marcar como salida duplicada
                 entrada.loc[group.index[i + 1], 'Error'] = 'Salida duplicada'
                 
@@ -134,6 +153,28 @@ def duplicados(marcaje):
     entrada = pd.DataFrame(nuevoDf)
 
     return entrada
+
+def registraSalida(marcaje, indice):
+    i = indice + 1
+
+    # Verifica si hay cierre para el registro actual
+    if (marcaje.at[indice, 'entrada/salida'] == 1 and i < len(marcaje.index) and marcaje.at[i, 'entrada/salida'] == 3 and marcaje.at[indice, 'rut'] == marcaje.at[i, 'rut']):
+
+        marcaje.at[indice, 'cierre'] = "Tiene cierre"
+        marcaje.at[i, 'cierre'] = "Tiene cierre"
+        return  # Salida encontrada, no necesita recursión
+
+    # Busca la siguiente salida válida
+    while i < len(marcaje.index):
+        if (marcaje.at[indice, 'entrada/salida'] == 1 and marcaje.at[i, 'entrada/salida'] == 3 and marcaje.at[indice, 'rut'] == marcaje.at[i, 'rut']):
+
+            marcaje.at[indice, 'cierre'] = "Tiene cierre"
+            marcaje.at[i, 'cierre'] = "Tiene cierre"
+            return  # Salida encontrada
+        
+        i += 1
+
+    return
 
 def faltaSalida(marcaje, reglas):
     salida =  marcaje.copy()
