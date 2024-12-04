@@ -228,7 +228,8 @@ def marcaOpuesto(marcaje, reglas):
                 minutoSalida = row2['minutoSal']
 
                 break
-        
+            
+        '''
         # Buscar entrada con una ventanad de 30 minutos en donde se marca salida y corregir
         if (row['hora'] == horaEntrada and (minutoEntrada - 10) <= row['minuto'] and  row['minuto'] <= (minutoEntrada + 30) and rut == row['rut'] 
             and row['entrada/salida'] == 3 and row['Error'] == "Ok" and row['cierre'] != "Tiene cierre"):
@@ -238,6 +239,7 @@ def marcaOpuesto(marcaje, reglas):
                 df.at[i, 'Error'] = "Salida invertida a entrada"
             else:
                 df.at[i, 'Error'] += ", Salida invertida a entrada"
+        '''
 
         # Buscar salida con una ventana de 10 minutos en donde se marca entrada y corregir
         if (row['hora'] == horaSalida and (minutoSalida - 10) <= row['minuto'] and  row['minuto'] <= (minutoSalida + 10) and rut == row['rut'] 
