@@ -140,8 +140,10 @@ def apply_filters():
                 keywords = ["automatica"]
             elif condicion == "invertir":
                 keywords = ["invertida"]
+            elif condicion == "problema":
+                keywords = ["duplicado", "duplicada", "invertida", "automatica"]
             elif condicion == "correcto":
-                print("Se elige Correcto en filtro")
+                # print("Se elige Correcto en filtro")
                 keywords = ["Ok"]
 
             print(" Pasa Keywords")
