@@ -9,16 +9,19 @@ def depurar_archivo(file_path):
         # marcaje = pd.read_csv(file_path, header= None, sep=',', usecols=[0, 2, 3, 5, 6], names=["Codigo", "entrada/salida", "rut", "hora", "minuto"])  
 
         marcaje = pd.read_csv(file_path, header= None, sep=',', 
-                      names=["Codigo", "a", "entrada/salida", "rut","b", "hora", "minuto", "día", "mes", "año", "c", "d", "e", "f", "g", "h", "i", "j", "k"])
+                      names=["Codigo", "a", "entrada/salida", "rut","b", "hora", "minuto", "mes", "día", "año", "c", "d", "e", "f", "g", "h", "i", "j", "k"])
 
         # Juntar hora y minuto en una sola columna
         # Antes de exportar archivo en siguiente modulo se dropea col 'Hora' y 'Error'
         marcaje['Hora'] = marcaje['hora'].astype(str).str.zfill(2) + ':' + marcaje['minuto'].astype(str).str.zfill(2)       
         
-        
-        ruta_reglas = "/app/horarios_mes_actual.csv"
-        # names_reglas = ["Codigo", "nombre", "año", "mes", "entrada", "salida", "horaEn", "minutoEn", "horaSal", "minutoSal"]
-        reglas = pd.read_csv(ruta_reglas, sep=';').dropna(axis='columns', how='all')
+        try:
+            ruta_reglas = "/app/horario_mensual/horarios_creados.csv"
+            # names_reglas = ["Codigo", "nombre", "año", "mes", "entrada", "salida", "horaEn", "minutoEn", "horaSal", "minutoSal"]
+            reglas = pd.read_csv(ruta_reglas, sep=',').dropna(axis='columns', how='all')
+        except Exception as e:
+            print(f"Error al cargar archivo de reglas {e}")
+            return None
         
     except Exception as e:
             print(f"Error DEPURACION - Crea DF con contenido de archivo subido: {e}")
@@ -33,9 +36,24 @@ def depurar_archivo(file_path):
         print(f"Error DEPURACION - proceso DUPLICADOS: {e}")
         return None
     
+    '''REVISION DE SALIDAS'''
+    try:
+       marcaje['cierre'] = "No tiene cierre"
+       marcaje = marcaje.sort_values(by=['rut', 'día', 'Hora']).reset_index(drop=True)
+
+       for indice in range(len(marcaje.index)):
+        if marcaje.at[indice, 'entrada/salida'] == 1:  # Solo evalúa entradas
+            registraSalida(marcaje, indice)
+
+        marcaje = marcaje.sort_values(by=['día', 'Hora', 'rut']).reset_index(drop=True)
+    except Exception as e:
+        print(f"Error DEPURACION - proceso TIENE SALIDA: {e}")
+        return None
+    
     ''' FALTA SALIDA'''
     try:
         marcaje = faltaSalida(marcaje, reglas)
+        marcaje = marcaje.sort_values(by=['día', 'Hora', 'rut']).reset_index(drop=True)
     except Exception as e:
         print(f"Error DEPURACION - proceso FALTA SALIDA: {e}")
         return None
@@ -49,17 +67,9 @@ def depurar_archivo(file_path):
     
     try:
         # Se termina la depuración y se eliminan las columnas que no sirven
-        # marcaje = marcaje.drop(columns=['hora', 'minuto']) 
-
+        
         data = marcaje
         # data = data.dropna()
-
-        # Return processed data or save it to a new file
-        # processed_file_path = file_path.replace(".log", "_processed.csv")
-        # data.to_csv(processed_file_path, index=False)
-        # return processed_file_path  # Return path of processed file
-
-        
 
         # Save the DataFrame to a CSV file
         path_temp = '/app/temp/datos_procesados.csv'
@@ -89,19 +99,21 @@ def duplicados(marcaje):
             fila_actual = group.iloc[i]
             fila_siguiente = group.iloc[i + 1]
             
-            # Verificar si hay entradas duplicadas sin salida entre ellas
-            if (fila_actual['entrada/salida'] == 1 and fila_siguiente['entrada/salida'] == 1 and ultima_accion != 3):
+            # Verificar si hay entradas duplicadas sin salida entre ellas y son el mismo día
+            if (fila_actual['entrada/salida'] == 1 and fila_siguiente['entrada/salida'] == 1 and ultima_accion != 3 and 
+                fila_actual['día'] == fila_siguiente['día']):
                 # Marcar como entrada duplicada
                 entrada.loc[group.index[i + 1], 'Error'] = 'Entrada duplicada'
 
-            # Verificar si hay salidas duplicadas sin entrada entre ellas
-            elif (fila_actual['entrada/salida'] == 3 and fila_siguiente['entrada/salida'] == 3 and ultima_accion != 1):
+            # Verificar si hay salidas duplicadas sin entrada entre ellas y son el mismo día
+            elif (fila_actual['entrada/salida'] == 3 and fila_siguiente['entrada/salida'] == 3 and ultima_accion != 1 and 
+                  fila_actual['día'] == fila_siguiente['día']):
                 # Marcar como salida duplicada
                 entrada.loc[group.index[i + 1], 'Error'] = 'Salida duplicada'
                 
             ultima_accion = fila_actual['entrada/salida']
 
-    entrada = entrada.sort_values(by=['día', 'Hora']).reset_index(drop=True)
+    entrada = entrada.sort_values(by=['día', 'Hora', 'rut']).reset_index(drop=True)
 
     nuevoDf = []
 
@@ -135,42 +147,71 @@ def duplicados(marcaje):
 
     return entrada
 
-def faltaSalida(marcaje, reglas):
-    salida =  marcaje
+def registraSalida(marcaje, indice):
+    i = indice + 1
 
-    for  i, row in salida.iterrows():
+    # Verifica si hay cierre para el registro actual
+    if (marcaje.at[indice, 'entrada/salida'] == 1 and i < len(marcaje.index) and marcaje.at[i, 'entrada/salida'] == 3 and marcaje.at[indice, 'rut'] == marcaje.at[i, 'rut']):
+
+        marcaje.at[indice, 'cierre'] = "Tiene cierre"
+        marcaje.at[i, 'cierre'] = "Tiene cierre"
+        return  # Salida encontrada
+
+    # Busca la siguiente salida válida
+    while i < len(marcaje.index):
+        if (marcaje.at[indice, 'entrada/salida'] == 1 and marcaje.at[i, 'entrada/salida'] == 3 and marcaje.at[indice, 'rut'] == marcaje.at[i, 'rut']):
+
+            marcaje.at[indice, 'cierre'] = "Tiene cierre"
+            marcaje.at[i, 'cierre'] = "Tiene cierre"
+            return  # Salida encontrada
+        
+        i += 1
+
+    return
+
+def faltaSalida(marcaje, reglas):
+    salida = marcaje.copy()
+
+    for i, row in salida.iterrows():
 
         error = 'Salida automatica corregida'
 
-        if (row['Hora'] == '00:00'):
-            if(salida.at[i, 'Error'] == 'Ok'):
-                salida.at[i, 'Error'] = error
-            else:
-                salida.at[i, 'Error'] += f", {error}"
-
+        # Si el registro es una entrada y no tiene salida
+        if row['entrada/salida'] == 1 and row['cierre'] == "No tiene cierre":
+            
             codigoHorario = row['Codigo']
             
-            # Se procede a arreglar reemplazando el horario por el tiempo esperado de salida según reglamento  
-            for j, row2 in reglas.iterrows():
-                if (codigoHorario == row2['Codigo']):
-                    
-                    HorarioSalida = row2['salida']
-                    horaSalida = row2['horaSal']
-                    minutoSalida = row2['minutoSal']
+            # Buscar el horario correspondiente en reglas
+            regla = reglas[reglas['Codigo'] == codigoHorario]
+            if not regla.empty:
+                HorarioSalida = regla.iloc[0]['salida']
+                horaSalida = regla.iloc[0]['horaSal']
+                minutoSalida = regla.iloc[0]['minutoSal']
 
-                    break
+                # Si la hora de salida por regla es mayor que la hora actual de la fila (sale el mismo día)
+                if horaSalida > row['hora'] or (horaSalida == row['hora'] and minutoSalida > row['minuto']):
+                    # Actualizar fila que no tiene cierre
+                    salida.at[i, 'cierre'] = "Tiene cierre"
 
-            salida.at[i, 'hora'] = horaSalida
-            salida.at[i, 'minuto'] = minutoSalida
-            salida.at[i, 'Hora'] = HorarioSalida      
-            salida.at[i, "día"] -= 1    
+                    # Crear nueva fila y añadirla al DataFrame
+                    nueva_fila = row.copy()
+                    nueva_fila['entrada/salida'] = 3
+                    nueva_fila['hora'] = horaSalida
+                    nueva_fila['minuto'] = minutoSalida
+                    nueva_fila['Hora'] = HorarioSalida         
+                    nueva_fila['Error'] = error
+                    nueva_fila['cierre'] = "Tiene cierre"
 
-    salida = salida.sort_values(by=['día', 'Hora']).reset_index(drop=True)
+                    salida = pd.concat([salida, pd.DataFrame([nueva_fila])], ignore_index=True)
+
+    # Ordenar el DataFrame por día y hora
+    salida = salida.sort_values(by=['día', 'Hora', 'rut']).reset_index(drop=True)
     
     return salida
 
+
 def marcaOpuesto(marcaje, reglas):
-    df = marcaje
+    df = marcaje.copy()
 
     for  i, row in df.iterrows():
         
@@ -187,17 +228,23 @@ def marcaOpuesto(marcaje, reglas):
                 minutoSalida = row2['minutoSal']
 
                 break
-        
+            
+        '''
         # Buscar entrada con una ventanad de 30 minutos en donde se marca salida y corregir
-        if (row['hora'] == horaEntrada and (minutoEntrada - 10) <= row['minuto'] and  row['minuto'] <= (minutoEntrada + 30) and rut == row['rut'] and row['entrada/salida'] == 3):
+        if (row['hora'] == horaEntrada and (minutoEntrada - 10) <= row['minuto'] and  row['minuto'] <= (minutoEntrada + 30) and rut == row['rut'] 
+            and row['entrada/salida'] == 3 and row['Error'] == "Ok" and row['cierre'] != "Tiene cierre"):
+
             df.at[i, 'entrada/salida'] = 1
             if (row['Error'] == 'Ok'):
                 df.at[i, 'Error'] = "Salida invertida a entrada"
             else:
                 df.at[i, 'Error'] += ", Salida invertida a entrada"
+        '''
 
         # Buscar salida con una ventana de 10 minutos en donde se marca entrada y corregir
-        if (row['hora'] == horaSalida and (minutoSalida - 10) <= row['minuto'] and  row['minuto'] <= (minutoSalida + 10) and rut == row['rut'] and row['entrada/salida'] == 1):
+        if (row['hora'] == horaSalida and (minutoSalida - 10) <= row['minuto'] and  row['minuto'] <= (minutoSalida + 10) and rut == row['rut'] 
+            and row['entrada/salida'] == 1 and row['Error'] == "Ok" and row['cierre'] != "Tiene cierre"):
+
             df.at[i, 'entrada/salida'] = 3
 
             if (row['Error'] == 'Ok'):

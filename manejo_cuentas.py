@@ -150,3 +150,31 @@ def view_accounts():
     
     return render_template("view_accounts.html", users=usuarios_formateados)
 
+
+@manejo_cuentas.route("/delete_account", methods=["POST"])
+@admin_login_required
+def delete_account():
+    """Delete a user account"""
+    from flask import request, flash, redirect
+    
+    user_id = request.form.get("user_id")
+    
+    if not user_id:
+        flash("ID de usuario no proporcionado.", "warning")
+        return redirect("/view_accounts")
+    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        # Delete the user with the given ID
+        cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        db.commit()
+        cursor.close()
+        db.close()
+        
+        flash("Usuario eliminado exitosamente.", "success")
+    except Exception as e:
+        print(f"Error al eliminar usuario: {e}")
+        flash("Hubo un error al intentar eliminar el usuario.", "danger")
+    
+    return redirect("/view_accounts")

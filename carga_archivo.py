@@ -22,7 +22,7 @@ def carga_archivo_func():
         # Comprueba archivo
         if 'file' not in request.files:
             flash('No se detecta archivo', "error")
-            return redirect('/carga')
+            return redirect('/cargar')
         
         
         archivo = request.files['file']
@@ -30,7 +30,7 @@ def carga_archivo_func():
             
         if archivo.filename == '':
             flash('No se detecta archivo', "error")
-            return redirect('/carga')
+            return redirect('/cargar')
         
         # Comprobar por extension, TIENE QUE SER '.log'
         
@@ -87,7 +87,8 @@ def carga_archivo_func():
         
         
         # LLama funcion de depuracion principal. Desde esta funcion de manejan varios tipos de depuracion. No esta en esta branch
-        file_path_depurado = depurar_archivo(file_path)
+        depurar_archivo(file_path)
+        
 
 
         # if processed_filepath:
