@@ -305,5 +305,3 @@ def download_historial():
         flash("Error al descargar el historial.", "error")
         return redirect('/visualizacion')
     
-
-# --------------------------------------------------------------------------------------------------------
