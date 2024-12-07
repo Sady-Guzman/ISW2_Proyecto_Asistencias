@@ -14,10 +14,15 @@ def validar(df_corregido, selected_rows):
         indices.extend(df_corregido[mask].index.tolist())
 
     print("Indices: ", indices)
-
+    # print(df_corregido.dtypes)
     try:
 
         df = df_corregido.copy()
+        df['hora'] = df['hora'].apply(lambda x: f"{x:02}")
+        df['minuto'] = df['minuto'].apply(lambda x: f"{x:02}")
+        df['mes'] = df['mes'].apply(lambda x: f"{x:02}")
+        df['día'] = df['día'].apply(lambda x: f"{x:02}")
+        df['año'] = df['año'].apply(lambda x: f"{x:02}")
 
         for i in indices:
 
@@ -66,12 +71,12 @@ def validar(df_corregido, selected_rows):
                     elif error == "Salida invertida a entrada":
                         print("Se revierte SALIDA INVERTIDA A ENTRADA")
 
-                        df.at[i, 'entrada/salida'] = 3
+                        df.at[i, 'entrada/salida'] = "03"
                     
                     elif error == "Entrada invertida a salida":
                         print("Se revierte ENTRADA INVERTIDA A SALIDA")
 
-                        df.at[i, 'entrada/salida'] = 1
+                        df.at[i, 'entrada/salida'] = "01"
                     
                     elif error == "Entrada creada por duplicado":
                         print("Se eliminara ENTRADA CREADA POR DUPLICADO")
@@ -89,7 +94,6 @@ def validar(df_corregido, selected_rows):
 
                 df.at[i, 'Error'] = "Correciones revertidas"
 
-    
         crearHistorial(df_corregido, indices)               
         
         return df

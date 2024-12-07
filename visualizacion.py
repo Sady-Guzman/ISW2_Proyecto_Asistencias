@@ -23,7 +23,7 @@ def visualizar():
     
     if os.path.exists(file_path):
         # Load the CSV file with pandas
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path, dtype={'Codigo': str, "entrada/salida": str})
         
         # Seleccionar solo las cols que tienen info relevante.
         # El archivo que generan los relojes tiene varios campos que no se usan.
@@ -67,7 +67,7 @@ def apply_filters():
     # Filtros estan en desarrollo. No aplica en MAIN BRANCH
     try:
         # Load the CSV file with pandas
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path, dtype={'Codigo': str, "entrada/salida": str})
         
 
         # FILTRO RUT
@@ -95,9 +95,9 @@ def apply_filters():
             # Ojo con codigo, Deberia tener 0 a la izquierda
             
             if tipo_marcaje == "entrada":
-                tipo_numerico = "1"
+                tipo_numerico = "01"
             else:
-                tipo_numerico = "3"
+                tipo_numerico = "03"
             
 
             print(f"El tipo de marcaje que se busca es: {tipo_marcaje}, y tipo_numerico: {tipo_numerico}")
@@ -233,12 +233,19 @@ def download_csv():
     # print("Contenido recibido en selected_rows:", selected_rows)
 
     file_path = '/app/temp/datos_procesados.csv'
-    df = pd.read_csv(file_path)
+    df = pd.read_csv(file_path, dtype={"Codigo": str,"a": str, "entrada/salida": str, "b": str,"c": str,"d": str,"e": str,"f": str,"g": str,"h": str,"i": str,"j": str,"k": str})
+    
 
     if not selected_rows:
 
         try:          
-            df_final = df.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
+            df_final = df.copy()
+            df_final.drop(columns=['Hora', 'Error', 'cierre'], inplace=True)
+            df_final['hora'] = df_final['hora'].apply(lambda x: f"{x:02}")
+            df_final['minuto'] = df_final['minuto'].apply(lambda x: f"{x:02}")
+            df_final['mes'] = df_final['mes'].apply(lambda x: f"{x:02}")
+            df_final['día'] = df_final['día'].apply(lambda x: f"{x:02}")
+            df_final['año'] = df_final['año'].apply(lambda x: f"{x:02}")
 
             crearHistorial(df, None)
 
@@ -268,6 +275,9 @@ def download_csv():
                 print("Error al cargar Filas: ", e)
                 
             df_selected = pd.DataFrame(selected_rows, columns=columnas)
+
+            # print(df.dtypes)
+
             # Convertir la columna 'día' a tipo entero
             df_selected["día"] = df_selected["día"].astype(int)
 
