@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    rut CHAR(11) NOT NULL,
+    rut CHAR(11) NOT NULL UNIQUE,
     username TEXT NOT NULL UNIQUE,
     hash TEXT NOT NULL
 );
