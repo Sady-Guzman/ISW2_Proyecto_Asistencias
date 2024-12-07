@@ -88,13 +88,19 @@
 
                     <!-- Filter by Day -->
                     <div class="form-group mt-3">
-                        <label for="filter-day">Día</label>
-                        <select class="form-control" id="filter-day" name="day_filter">
-                            <option value="">Todos</option>
+                        <label for="filter-days" style="cursor: pointer;" onclick="toggleDays()">
+                            Días <span style="font-size: small; color: gray;">(click para mostrar)</span>
+                        </label>
+                        
+                        <!-- Hidden checkbox list for days -->
+                        <div id="day-checkbox-list" style="display:none;">
                             {% for day in distinct_days %}
-                                <option value="{{ day }}">{{ day }}</option>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="day-{{ day }}" name="day_filter" value="{{ day }}">
+                                    <label class="form-check-label" for="day-{{ day }}">{{ day }}</label>
+                                </div>
                             {% endfor %}
-                        </select>
+                        </div>
                     </div>
 
                     <!-- Codigo horario trabajador Filter -->
@@ -176,17 +182,26 @@
 
 
 
+<!-- Maneja filtro de dias -->
+<script>
+    // Function to toggle the visibility of the day checkboxes
+    function toggleDays() {
+        const dayList = document.getElementById('day-checkbox-list');
+        dayList.style.display = (dayList.style.display === 'none' || dayList.style.display === '') ? 'block' : 'none';
+    }
+</script>
 
-    <!-- JavaScript for toggling checkboxes -->
-    <script>
-        function toggleAllCheckboxes(source) {
-            const checkboxes = document.querySelectorAll('.row-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = source.checked;
-            });
-        }
-    </script>
+<!-- JavaScript for toggling checkboxes -->
+<script>
+    function toggleAllCheckboxes(source) {
+        const checkboxes = document.querySelectorAll('.row-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = source.checked;
+        });
+    }
+</script>
 
+<!-- Procesa las tuplas que selecciona el usuario -->
 <script>
     document.getElementById('process_selected_rows').onsubmit = function(event) {
         event.preventDefault(); // Evita el envío predeterminado del formulario
@@ -206,7 +221,7 @@
             const correctedUrl = window.URL.createObjectURL(blob);
             const correctedLink = document.createElement('a');
             correctedLink.href = correctedUrl;
-            correctedLink.download = "datos_corregidos.csv";
+            correctedLink.download = "datos_corregidos.log";
             correctedLink.click();
 
             // Descarga el historial después

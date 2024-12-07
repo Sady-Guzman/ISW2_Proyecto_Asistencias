@@ -59,7 +59,7 @@ def apply_filters():
     tipo_marcaje = request.form.get('tipo_marcaje')
     condicion = request.form.get('condicion')
     codigo_filter = request.form.get('codigo_filter')
-    day_filter = request.form.get('day_filter')
+    day_filter = request.form.getlist('day_filter')
 
 
     file_path = '/app/temp/datos_procesados.csv'
@@ -186,15 +186,16 @@ def apply_filters():
         distinct_days = sorted(df['día'].unique())  # Sorted for user-friendly display
         
         # Apply the day filter if provided
-        if day_filter:
-            print("Day filter entered:", day_filter)
+        if day_filter:  # Only filter if there are selected days
+            print("Day filters entered:", day_filter)
             try:
-                # Convert the 'dia' column to string for filtering
+                # Ensure 'día' column is a string
                 df['día'] = df['día'].astype(str)
-                df = df[df['día'] == day_filter]
+                # Filter rows where 'día' matches any of the selected days
+                df = df[df['día'].isin(day_filter)]
             except Exception as e:
-                print(f"Error filtering by day: {e}")
-                flash("Error al filtrar por día.", e)
+                print(f"Error filtering by days: {e}")
+                flash("Error al filtrar por días.", "error")
                 return render_template("apology.html")
         
 
