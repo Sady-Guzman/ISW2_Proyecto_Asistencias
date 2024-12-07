@@ -87,18 +87,6 @@ def apply_filters():
             to_hour = pd.to_datetime(to_hour, format='%H:%M').time()
             df = df[df['time'] <= to_hour]
 
-        
-        # Filtro por ENTRADA / SALIDA
-        # if tipo_marcaje:
-
-        #     # Asigna el numero correspondiente a el marcaje para filtrar en df
-        #     if tipo_marcaje == "Entrada":
-        #         tipo_numerico = "01"
-        #     if tipo_marcaje == "Salida":
-        #         tipo_numerico = "03"
-
-        #     # Compara con codigo numerico
-        #     df = df[df['entrada/salida'] == tipo_numerico]
 
 
         # Filtro por ENTRADA / SALIDA
@@ -319,48 +307,3 @@ def download_historial():
     
 
 # --------------------------------------------------------------------------------------------------------
-
-'''
-@visualizacion.route('/process_selected_rows', methods=['GET', 'POST'])
-@user_login_required
-def process_selected_rows():
-    """Process selected rows based on checkboxes."""
-    from flask import request
-
-    file_path = '/app/temp/datos_procesados.csv'
-    
-    print("LLEGA A process selected rows")
-    
-    try:
-        print("Entra a try")
-        # Retrieve selected row indices from the form
-        selected_rows = request.form.getlist('selected_rows')
-        
-        if not selected_rows:
-            flash("No se seleccionaron filas.", "warning")
-            return redirect('/visualizacion')
-        
-        # Convert the selected row indices to integers
-        selected_indices = list(map(int, selected_rows))
-        print("indice:", selected_indices)
-        
-        # Load the CSV file into a DataFrame
-        df = pd.read_csv(file_path)
-        
-        # Select only the rows corresponding to the selected indices
-        df_selected = df.iloc[selected_indices]
-        
-        # Example: Save the selected rows as a new CSV (optional)
-        selected_file_path = '/app/temp/selected_data.csv'
-        # DEBUG
-        print("df_selcted.tocsv: selected_file_path <<< /app/temp/selected_data.csv ")
-        df_selected.to_csv(selected_file_path, index=False)
-        
-        # Example: Send the filtered DataFrame as a downloadable file
-        return send_file(selected_file_path, as_attachment=True, download_name="selected_data.csv")
-    except Exception as e:
-        print(f"Error while processing selected rows: {e}")
-        flash("Error al procesar las filas seleccionadas.", "error")
-        return redirect('/visualizacion')
-
-'''
