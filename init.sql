@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    rut CHAR(11) NOT NULL,
+    rut CHAR(11) NOT NULL UNIQUE,
     username TEXT NOT NULL UNIQUE,
     hash TEXT NOT NULL
 );
@@ -11,11 +11,4 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Insert an admin user
 -- Hash de contrasena creado con crea_hash.py
-INSERT INTO users (rut, username, hash)
-VALUES ('0000000-0', 'admin', 'scrypt:32768:8:1$zVWQjQRhaG6fNVVO$23fab2ec89b38b65d0a403f368b8a679c0b103e1b295a82b2c56f93287f9d05ff70f9e9a5c726feb54049c160e89f01a3716d98e5f6b4b51ec86cec170b26dca')
-ON CONFLICT (username) DO NOTHING;  -- Skip insert if 'admin' already exists
-
--- Insert Test User para pasar pruebas 
-INSERT INTO users (rut, username, hash)
-VALUES ('0000000-1', 'tuser', 'scrypt:32768:8:1$lP3LAjkFbOLzgYry$a8ef3ac7467d00dec69b77eff14b4bdd2b407dd8f1df37f20e9216578ec730e91cab923d06c2e3a1a6555356bfcd907413b148c1e93b9a66a8bf30543205b238')
-ON CONFLICT (username) DO NOTHING;  -- Skip insert if 'tuser' (test user) already exists
+INSERT INTO users (rut, username, hash) VALUES ('0000000-0', 'admin', 'scrypt:32768:8:1$LXDOuJgd9ALS4Pba$3b221f58e00a35fecdc1383b32f1038334d1ca9992a8c5a97f46dad07476945826f7c6c246f00e745fcec395f9e64daaacc14a437f996b5e95174b792b064632') ON CONFLICT (username) DO NOTHING;  -- Skip insert if 'admin' already exists

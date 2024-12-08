@@ -18,7 +18,8 @@ app = Flask(__name__)
 app.jinja_env.globals.update(enumerate=enumerate)
 app.config['DEBUG'] = True
 
-# Configure session to use filesystem (instead of signed cookies)
+
+# Configura la sesion para usar sistema de archivos en vez de cookies
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 # app.config['UPLOAD_FOLDER'] = 'temp'
@@ -27,7 +28,7 @@ Session(app)
 
 @app.after_request
 def after_request(response):
-    """Ensure responses aren't cached"""
+    """Asegura que las respuestas no se guardan en cache"""
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
@@ -35,11 +36,10 @@ def after_request(response):
 
 @app.route("/")
 def index():
-    """Show index"""
-    # Dejar vacio o poner informacin?
+    # Mostrar index como pagina de inicio
     return render_template("index.html")
 
-# Import other apps (blueprints)
+# Importa los modulos (Blueprints)
 app.register_blueprint(session_routes)
 app.register_blueprint(manejo_cuentas)
 app.register_blueprint(carga_archivo)

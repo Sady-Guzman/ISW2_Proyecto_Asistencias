@@ -40,7 +40,7 @@ def crearHistorial(df, indices):
                     elif error == "Salida automatica corregida":
                         print("Se reconoce en historial SALIDA AUTOMATICA")
                         # correciones.append(f"Se cambia hora de salida 00:00 a hora de salida de reglas ({row['hora']})")
-                        correciones.append(f"Se crea hora de salida según reglas ({row['hora']})")
+                        correciones.append(f"Se crea hora de salida según reglas ({row['Hora']})")
                     elif error == "Salida invertida a entrada":
                         print("Se reconoce en historial SALIDA INVERTIDA A ENTRADA")
                         correciones.append("Se invierte marcaje de tipo salida a marcaje de tipo entrada")

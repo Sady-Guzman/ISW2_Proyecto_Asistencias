@@ -6,10 +6,10 @@ def depurar_archivo(file_path):
     
     try:
         # Assuming your .log file can be read with Pandas
-        # marcaje = pd.read_csv(file_path, header= None, sep=',', usecols=[0, 2, 3, 5, 6], names=["Codigo", "entrada/salida", "rut", "hora", "minuto"])  
 
         marcaje = pd.read_csv(file_path, header= None, sep=',', 
-                      names=["Codigo", "a", "entrada/salida", "rut","b", "hora", "minuto", "mes", "día", "año", "c", "d", "e", "f", "g", "h", "i", "j", "k"])
+                      names=["Codigo", "a", "entrada/salida", "rut","b", "hora", "minuto", "mes", "día", "año", "c", "d", "e", "f", "g", "h", "i", "j", "k"], 
+                      dtype={"Codigo": str,"a": str,"entrada/salida": str,"b": str,"c": str,"d": str,"e": str,"f": str,"g": str,"h": str,"i": str,"j": str,"k": str})
 
         # Juntar hora y minuto en una sola columna
         # Antes de exportar archivo en siguiente modulo se dropea col 'Hora' y 'Error'
@@ -42,7 +42,7 @@ def depurar_archivo(file_path):
        marcaje = marcaje.sort_values(by=['rut', 'día', 'Hora']).reset_index(drop=True)
 
        for indice in range(len(marcaje.index)):
-        if marcaje.at[indice, 'entrada/salida'] == 1:  # Solo evalúa entradas
+        if marcaje.at[indice, 'entrada/salida'] == "01":  # Solo evalúa entradas
             registraSalida(marcaje, indice)
 
         marcaje = marcaje.sort_values(by=['día', 'Hora', 'rut']).reset_index(drop=True)
@@ -70,7 +70,6 @@ def depurar_archivo(file_path):
         
         data = marcaje
         # data = data.dropna()
-
         # Save the DataFrame to a CSV file
         path_temp = '/app/temp/datos_procesados.csv'
         data.to_csv(path_temp, index=False, encoding='utf-8')
@@ -100,13 +99,13 @@ def duplicados(marcaje):
             fila_siguiente = group.iloc[i + 1]
             
             # Verificar si hay entradas duplicadas sin salida entre ellas y son el mismo día
-            if (fila_actual['entrada/salida'] == 1 and fila_siguiente['entrada/salida'] == 1 and ultima_accion != 3 and 
+            if (fila_actual['entrada/salida'] == "01" and fila_siguiente['entrada/salida'] == "01" and ultima_accion != "03" and 
                 fila_actual['día'] == fila_siguiente['día']):
                 # Marcar como entrada duplicada
                 entrada.loc[group.index[i + 1], 'Error'] = 'Entrada duplicada'
 
             # Verificar si hay salidas duplicadas sin entrada entre ellas y son el mismo día
-            elif (fila_actual['entrada/salida'] == 3 and fila_siguiente['entrada/salida'] == 3 and ultima_accion != 1 and 
+            elif (fila_actual['entrada/salida'] == 3 and fila_siguiente['entrada/salida'] == 3 and ultima_accion != "01" and 
                   fila_actual['día'] == fila_siguiente['día']):
                 # Marcar como salida duplicada
                 entrada.loc[group.index[i + 1], 'Error'] = 'Salida duplicada'
@@ -128,14 +127,14 @@ def duplicados(marcaje):
 
             # Crear una fila de "salida creada por duplicado" con los mismos datos
             salida_row = row.copy()
-            salida_row['entrada/salida'] = 3  # Cambiar a salida
+            salida_row['entrada/salida'] = "03"  # Cambiar a salida
             salida_row['Error'] = 'Salida creada por duplicado'
             nuevoDf.append(salida_row)  # Agregar la nueva fila
             
         elif row['Error'] == 'Salida duplicada':
             # Crear una fila de "entrada creada por duplicado" con los mismos datos
             entrada_row = row.copy()
-            entrada_row['entrada/salida'] = 1  # Cambiar a entrada
+            entrada_row['entrada/salida'] = "01"  # Cambiar a entrada
             entrada_row['Error'] = 'Entrada creada por duplicado'
             nuevoDf.append(entrada_row)  # Agregar la nueva fila
 
@@ -151,7 +150,7 @@ def registraSalida(marcaje, indice):
     i = indice + 1
 
     # Verifica si hay cierre para el registro actual
-    if (marcaje.at[indice, 'entrada/salida'] == 1 and i < len(marcaje.index) and marcaje.at[i, 'entrada/salida'] == 3 and marcaje.at[indice, 'rut'] == marcaje.at[i, 'rut']):
+    if (marcaje.at[indice, 'entrada/salida'] == "01" and i < len(marcaje.index) and marcaje.at[i, 'entrada/salida'] == "03" and marcaje.at[indice, 'rut'] == marcaje.at[i, 'rut']):
 
         marcaje.at[indice, 'cierre'] = "Tiene cierre"
         marcaje.at[i, 'cierre'] = "Tiene cierre"
@@ -159,7 +158,7 @@ def registraSalida(marcaje, indice):
 
     # Busca la siguiente salida válida
     while i < len(marcaje.index):
-        if (marcaje.at[indice, 'entrada/salida'] == 1 and marcaje.at[i, 'entrada/salida'] == 3 and marcaje.at[indice, 'rut'] == marcaje.at[i, 'rut']):
+        if (marcaje.at[indice, 'entrada/salida'] == "01" and marcaje.at[i, 'entrada/salida'] == "03" and marcaje.at[indice, 'rut'] == marcaje.at[i, 'rut']):
 
             marcaje.at[indice, 'cierre'] = "Tiene cierre"
             marcaje.at[i, 'cierre'] = "Tiene cierre"
@@ -177,9 +176,9 @@ def faltaSalida(marcaje, reglas):
         error = 'Salida automatica corregida'
 
         # Si el registro es una entrada y no tiene salida
-        if row['entrada/salida'] == 1 and row['cierre'] == "No tiene cierre":
+        if row['entrada/salida'] == "01" and row['cierre'] == "No tiene cierre":
             
-            codigoHorario = row['Codigo']
+            codigoHorario = int(row['Codigo'])
             
             # Buscar el horario correspondiente en reglas
             regla = reglas[reglas['Codigo'] == codigoHorario]
@@ -195,7 +194,7 @@ def faltaSalida(marcaje, reglas):
 
                     # Crear nueva fila y añadirla al DataFrame
                     nueva_fila = row.copy()
-                    nueva_fila['entrada/salida'] = 3
+                    nueva_fila['entrada/salida'] = "03"
                     nueva_fila['hora'] = horaSalida
                     nueva_fila['minuto'] = minutoSalida
                     nueva_fila['Hora'] = HorarioSalida         
@@ -215,7 +214,7 @@ def marcaOpuesto(marcaje, reglas):
 
     for  i, row in df.iterrows():
         
-        codigoHorario = row['Codigo']
+        codigoHorario = int(row['Codigo'])
         rut = row['rut']
 
         for j, row2 in reglas.iterrows():
@@ -243,9 +242,9 @@ def marcaOpuesto(marcaje, reglas):
 
         # Buscar salida con una ventana de 10 minutos en donde se marca entrada y corregir
         if (row['hora'] == horaSalida and (minutoSalida - 10) <= row['minuto'] and  row['minuto'] <= (minutoSalida + 10) and rut == row['rut'] 
-            and row['entrada/salida'] == 1 and row['Error'] == "Ok" and row['cierre'] != "Tiene cierre"):
+            and row['entrada/salida'] == "01" and row['Error'] == "Ok" and row['cierre'] != "Tiene cierre"):
 
-            df.at[i, 'entrada/salida'] = 3
+            df.at[i, 'entrada/salida'] = "03"
 
             if (row['Error'] == 'Ok'):
                 df.at[i, 'Error'] = "Entrada invertida a salida"

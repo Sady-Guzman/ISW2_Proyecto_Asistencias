@@ -23,7 +23,7 @@ def visualizar():
     
     if os.path.exists(file_path):
         # Load the CSV file with pandas
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path, dtype={'Codigo': str, "entrada/salida": str})
         
         # Seleccionar solo las cols que tienen info relevante.
         # El archivo que generan los relojes tiene varios campos que no se usan.
@@ -59,7 +59,7 @@ def apply_filters():
     tipo_marcaje = request.form.get('tipo_marcaje')
     condicion = request.form.get('condicion')
     codigo_filter = request.form.get('codigo_filter')
-    day_filter = request.form.get('day_filter')
+    day_filter = request.form.getlist('day_filter')
 
 
     file_path = '/app/temp/datos_procesados.csv'
@@ -67,7 +67,7 @@ def apply_filters():
     # Filtros estan en desarrollo. No aplica en MAIN BRANCH
     try:
         # Load the CSV file with pandas
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path, dtype={'Codigo': str, "entrada/salida": str})
         
 
         # FILTRO RUT
@@ -87,18 +87,6 @@ def apply_filters():
             to_hour = pd.to_datetime(to_hour, format='%H:%M').time()
             df = df[df['time'] <= to_hour]
 
-        
-        # Filtro por ENTRADA / SALIDA
-        # if tipo_marcaje:
-
-        #     # Asigna el numero correspondiente a el marcaje para filtrar en df
-        #     if tipo_marcaje == "Entrada":
-        #         tipo_numerico = "01"
-        #     if tipo_marcaje == "Salida":
-        #         tipo_numerico = "03"
-
-        #     # Compara con codigo numerico
-        #     df = df[df['entrada/salida'] == tipo_numerico]
 
 
         # Filtro por ENTRADA / SALIDA
@@ -107,9 +95,9 @@ def apply_filters():
             # Ojo con codigo, Deberia tener 0 a la izquierda
             
             if tipo_marcaje == "entrada":
-                tipo_numerico = "1"
+                tipo_numerico = "01"
             else:
-                tipo_numerico = "3"
+                tipo_numerico = "03"
             
 
             print(f"El tipo de marcaje que se busca es: {tipo_marcaje}, y tipo_numerico: {tipo_numerico}")
@@ -198,15 +186,16 @@ def apply_filters():
         distinct_days = sorted(df['día'].unique())  # Sorted for user-friendly display
         
         # Apply the day filter if provided
-        if day_filter:
-            print("Day filter entered:", day_filter)
+        if day_filter:  # Only filter if there are selected days
+            print("Day filters entered:", day_filter)
             try:
-                # Convert the 'dia' column to string for filtering
+                # Ensure 'día' column is a string
                 df['día'] = df['día'].astype(str)
-                df = df[df['día'] == day_filter]
+                # Filter rows where 'día' matches any of the selected days
+                df = df[df['día'].isin(day_filter)]
             except Exception as e:
-                print(f"Error filtering by day: {e}")
-                flash("Error al filtrar por día.", e)
+                print(f"Error filtering by days: {e}")
+                flash("Error al filtrar por días.", "error")
                 return render_template("apology.html")
         
 
@@ -244,12 +233,19 @@ def download_csv():
     # print("Contenido recibido en selected_rows:", selected_rows)
 
     file_path = '/app/temp/datos_procesados.csv'
-    df = pd.read_csv(file_path)
+    df = pd.read_csv(file_path, dtype={"Codigo": str,"a": str, "entrada/salida": str, "b": str,"c": str,"d": str,"e": str,"f": str,"g": str,"h": str,"i": str,"j": str,"k": str})
+    
 
     if not selected_rows:
 
         try:          
-            df_final = df.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
+            df_final = df.copy()
+            df_final.drop(columns=['Hora', 'Error', 'cierre'], inplace=True)
+            df_final['hora'] = df_final['hora'].apply(lambda x: f"{x:02}")
+            df_final['minuto'] = df_final['minuto'].apply(lambda x: f"{x:02}")
+            df_final['mes'] = df_final['mes'].apply(lambda x: f"{x:02}")
+            df_final['día'] = df_final['día'].apply(lambda x: f"{x:02}")
+            df_final['año'] = df_final['año'].apply(lambda x: f"{x:02}")
 
             crearHistorial(df, None)
 
@@ -279,6 +275,9 @@ def download_csv():
                 print("Error al cargar Filas: ", e)
                 
             df_selected = pd.DataFrame(selected_rows, columns=columnas)
+
+            # print(df.dtypes)
+
             # Convertir la columna 'día' a tipo entero
             df_selected["día"] = df_selected["día"].astype(int)
 
@@ -317,50 +316,3 @@ def download_historial():
         flash("Error al descargar el historial.", "error")
         return redirect('/visualizacion')
     
-
-# --------------------------------------------------------------------------------------------------------
-
-'''
-@visualizacion.route('/process_selected_rows', methods=['GET', 'POST'])
-@user_login_required
-def process_selected_rows():
-    """Process selected rows based on checkboxes."""
-    from flask import request
-
-    file_path = '/app/temp/datos_procesados.csv'
-    
-    print("LLEGA A process selected rows")
-    
-    try:
-        print("Entra a try")
-        # Retrieve selected row indices from the form
-        selected_rows = request.form.getlist('selected_rows')
-        
-        if not selected_rows:
-            flash("No se seleccionaron filas.", "warning")
-            return redirect('/visualizacion')
-        
-        # Convert the selected row indices to integers
-        selected_indices = list(map(int, selected_rows))
-        print("indice:", selected_indices)
-        
-        # Load the CSV file into a DataFrame
-        df = pd.read_csv(file_path)
-        
-        # Select only the rows corresponding to the selected indices
-        df_selected = df.iloc[selected_indices]
-        
-        # Example: Save the selected rows as a new CSV (optional)
-        selected_file_path = '/app/temp/selected_data.csv'
-        # DEBUG
-        print("df_selcted.tocsv: selected_file_path <<< /app/temp/selected_data.csv ")
-        df_selected.to_csv(selected_file_path, index=False)
-        
-        # Example: Send the filtered DataFrame as a downloadable file
-        return send_file(selected_file_path, as_attachment=True, download_name="selected_data.csv")
-    except Exception as e:
-        print(f"Error while processing selected rows: {e}")
-        flash("Error al procesar las filas seleccionadas.", "error")
-        return redirect('/visualizacion')
-
-'''
