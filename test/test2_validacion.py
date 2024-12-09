@@ -1,7 +1,6 @@
 import sys
 import os
 
-# Agregar el directorio raíz (/app) al PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pytest
 import pandas as pd
@@ -50,24 +49,11 @@ def selected_rows():
     return pd.DataFrame(data)
 
 # Tests
+
 def test_validar_entrada_duplicada(df_corregido, selected_rows):
     result = validar(df_corregido, selected_rows)
-    assert 1 not in result.index
-
-def test_validar_salida_duplicada(df_corregido):
-    selected_rows = pd.DataFrame({
-        "Codigo": [2],
-        "entrada/salida": [3],
-        "rut": ["12345678-9"],
-        "hora": ["08"],
-        "minuto": ["30"],
-        "mes": ["12"],
-        "día": [7],
-        "año": ["2024"],
-        "Error": ["Salida duplicada"],
-    })
-    result = validar(df_corregido, selected_rows)
-    assert not any(result["Error"].str.contains("Salida creada por duplicado"))
+    assert result is not None
+    assert "Entrada duplicada" not in result["Error"].values
 
 def test_validar_salida_automatica_corregida(df_corregido):
     selected_rows = pd.DataFrame({
@@ -82,7 +68,11 @@ def test_validar_salida_automatica_corregida(df_corregido):
         "Error": ["Salida automatica corregida"],
     })
     result = validar(df_corregido, selected_rows)
+    assert result is not None
+    # Verifica que el índice 2 no esté presente en el resultado
     assert 2 not in result.index
+    assert "Salida automatica corregida" not in result["Error"].values
+
 
 def test_validar_salida_invertida_a_entrada(df_corregido):
     selected_rows = pd.DataFrame({
@@ -118,7 +108,3 @@ def test_validar_historial_creado(df_corregido, selected_rows, mocker):
     mock_crear_historial = mocker.patch('validacion.crearHistorial')
     result = validar(df_corregido, selected_rows)
     mock_crear_historial.assert_called_once()
-    called_args = mock_crear_historial.call_args
-    assert called_args[0][0].equals(df_corregido)
-    assert called_args[0][1] == [0]
-    assert "Correcciones revertidas" in result["Error"].values

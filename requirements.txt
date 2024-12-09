@@ -7,3 +7,4 @@ pytest
 selenium
 requests
 pandas
+pytest-mock

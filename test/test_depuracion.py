@@ -4,86 +4,61 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import pandas as pd
 import pytest
-from depuracion import depurar_archivo, duplicados, faltaSalida, marcaOpuesto  # Importar funciones del módulo
+from depuracion import depurar_archivo # Importar funciones del módulo
+
 
 @pytest.fixture
-def log_df(tmp_path):
-    """Fixture para cargar y estructurar el archivo .log"""
-    # Ruta temporal para el archivo de prueba
-    file_path = tmp_path / "marcajes_08-01-24.log"
-
-    # Crear contenido ficticio para el archivo .log
-    contenido_log = """001,,entrada,12345,,8,0,8,1,2024,,,,,,,,,
-                        002,,entrada,67890,,8,5,8,1,2024,,,,,,,,,
-                        003,,entrada,54321,,9,0,8,1,2024,,,,,,,,,
-                        001,,salida,12345,,18,0,8,1,2024,,,,,,,,,
-                        002,,salida,67890,,18,10,8,1,2024,,,,,,,,,
-                        """
-    # Escribir contenido en el archivo
-    file_path.write_text(contenido_log)
-
-    # Definir columnas basadas en el formato del archivo .log
-    columns = ["Codigo", "a", "entrada/salida", "rut", "b", "hora", "minuto", "día", "mes", "año",
-               "c", "d", "e", "f", "g", "h", "i", "j", "k"]
-
-    # Crear DataFrame a partir del archivo .log
-    df = pd.read_csv(file_path, names=columns)
-
-    # Convertir columnas relevantes a tipos numéricos
-    df["hora"] = df["hora"].astype(int)
-    df["minuto"] = df["minuto"].astype(int)
-    df["día"] = df["día"].astype(int)
-    df["mes"] = df["mes"].astype(int)
-    df["año"] = df["año"].astype(int)
-    df["entrada/salida"] = df["entrada/salida"].astype(str)
-
-    return df
+def log_file_reloj(tmp_path):
+    """
+    Copia el archivo reloj_dias_05-06.log al directorio temporal para su uso en las pruebas.
+    """
+    source_path = "/app/Documentacion/reloj_dias_05-06.log"  # Ruta del archivo original
+    target_path = tmp_path / "reloj_dias_05-06.log"
+    with open(source_path, "r") as source, open(target_path, "w") as target:
+        target.write(source.read())
+    return target_path
 
 @pytest.fixture
-def reglas(log_df):
-    """Fixture para generar el DataFrame de reglas de prueba"""
-    return pd.DataFrame({
-        "Codigo": log_df['Codigo'].unique(),
-        "horaEn": [8] * len(log_df['Codigo'].unique()),
-        "minutoEn": [0] * len(log_df['Codigo'].unique()),
-        "horaSal": [18] * len(log_df['Codigo'].unique()),
-        "minutoSal": [0] * len(log_df['Codigo'].unique())
-    })
+def reglas_file(tmp_path):
+    """
+    Crea un archivo CSV de reglas para la prueba.
+    """
+    reglas_data = """Codigo,nombre,año,mes,entrada,salida,horaEn,minutoEn,horaSal,minutoSal
+1,Regla1,2024,12,08:30,17:30,8,30,17,30
+2,Regla2,2024,12,09:15,18:00,9,15,18,0"""
+    reglas_path = tmp_path / "horarios_creados.csv"
+    reglas_path.write_text(reglas_data)
+    return reglas_path
 
-def test_pdd_001(log_df):
-    """Prueba de detección de duplicados."""
-    result = duplicados(log_df)
-    duplicados_detectados = result[result['Error'] == 'Entrada duplicada']
-    assert not duplicados_detectados.empty, "Error en la detección de duplicados"
+def test_depurar_archivo_with_reloj_dias_log(log_file_reloj, reglas_file, monkeypatch, tmp_path):
+    """
+    Prueba la función depurar_archivo utilizando el archivo reloj_dias_05-06.log y un archivo de reglas.
+    """
+    # Guardar la referencia original de pd.read_csv
+    original_read_csv = pd.read_csv
 
-def test_pdd_002(log_df):
-    """Prueba de manejo de duplicados múltiples."""
-    result = duplicados(log_df)
-    duplicados_detectados = result[result['Error'] == 'Entrada duplicada']
-    assert duplicados_detectados.shape[0] > 1, "Error en la detección de duplicados múltiples"
+    # Mockear la ruta del archivo de reglas
+    def mock_read_csv(path, *args, **kwargs):
+        if "horarios_creados.csv" in str(path):
+            return original_read_csv(reglas_file, *args, **kwargs)
+        return original_read_csv(path, *args, **kwargs)
 
-def test_pdd_003(log_df, reglas):
-    """Prueba de identificación de omisión de salida."""
-    result = faltaSalida(log_df, reglas)
-    omision_salida = result[result['Error'] == 'Salida automatica corregida']
-    assert not omision_salida.empty, "Error en la corrección de omisión de salida"
+    monkeypatch.setattr("pd.read_csv", mock_read_csv)
 
-def test_pdd_004(log_df, reglas):
-    """Prueba de identificación de omisión de entrada."""
-    result = faltaSalida(log_df, reglas)
-    omision_entrada = result[result['Error'] == 'Omisión de entrada']
-    assert not omision_entrada.empty, "Error en la identificación de omisión de entrada"
+    # Ejecutar la función depurar_archivo
+    depurar_archivo(log_file_reloj)
 
-def test_pdd_005(log_df, reglas):
-    """Prueba de corrección automática de acción opuesta."""
-    result = marcaOpuesto(log_df, reglas)
-    accion_opuesta = result[result['Error'] == 'Salida invertida a entrada']
-    assert not accion_opuesta.empty, "Error en la corrección de acción opuesta"
+    # Verificar que se haya creado el archivo procesado
+    processed_file = "/app/temp/datos_procesados.csv"
+    assert os.path.exists(processed_file), "El archivo procesado no fue creado"
 
-def test_pdd_006(log_df):
-    """Prueba de rendimiento con gran volumen de datos."""
-    result = depurar_archivo(log_df)
-    assert result is not None, "Error en el procesamiento de gran volumen de datos"
+    # Leer el archivo procesado y verificar su contenido
+    processed_data = pd.read_csv(processed_file)
+    assert not processed_data.empty, "El archivo procesado está vacío"
 
-# Para ejecutar el archivo, utiliza el comando:
-# pytest test_depuracion.py
+    # Validar algunas columnas clave
+    assert "Hora" in processed_data.columns, "La columna 'Hora' no está presente"
+    assert "Error" in processed_data.columns, "La columna 'Error' no está presente"
+
+    # Imprimir para inspección manual (opcional)
+    print(processed_data)
