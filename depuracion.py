@@ -12,7 +12,6 @@ def depurar_archivo(file_path):
                       dtype={"Codigo": str,"a": str,"entrada/salida": str,"b": str,"c": str,"d": str,"e": str,"f": str,"g": str,"h": str,"i": str,"j": str,"k": str})
 
         # Juntar hora y minuto en una sola columna
-        # Antes de exportar archivo en siguiente modulo se dropea col 'Hora' y 'Error'
         marcaje['Hora'] = marcaje['hora'].astype(str).str.zfill(2) + ':' + marcaje['minuto'].astype(str).str.zfill(2)       
         
         try:
@@ -35,17 +34,18 @@ def depurar_archivo(file_path):
     except Exception as e:
         print(f"Error DEPURACION - proceso DUPLICADOS: {e}")
         return None
-    
+
     '''REVISION DE SALIDAS'''
     try:
-       marcaje['cierre'] = "No tiene cierre"
-       marcaje = marcaje.sort_values(by=['rut', 'día', 'Hora']).reset_index(drop=True)
-
-       for indice in range(len(marcaje.index)):
-        if marcaje.at[indice, 'entrada/salida'] == "01":  # Solo evalúa entradas
-            registraSalida(marcaje, indice)
-
+        marcaje['cierre'] = "No tiene cierre"
+        marcaje = marcaje.sort_values(by=['rut', 'día', 'Hora']).reset_index(drop=True)
+        
+        for indice in range(len(marcaje.index)):
+            if marcaje.at[indice, 'entrada/salida'] == "01":
+                registraSalida(marcaje, indice)
+        
         marcaje = marcaje.sort_values(by=['día', 'Hora', 'rut']).reset_index(drop=True)
+           
     except Exception as e:
         print(f"Error DEPURACION - proceso TIENE SALIDA: {e}")
         return None
@@ -147,26 +147,31 @@ def duplicados(marcaje):
     return entrada
 
 def registraSalida(marcaje, indice):
-    i = indice + 1
+     # Obtener la fila actual
+    fila = marcaje.iloc[indice]
 
-    # Verifica si hay cierre para el registro actual
-    if (marcaje.at[indice, 'entrada/salida'] == "01" and i < len(marcaje.index) and marcaje.at[i, 'entrada/salida'] == "03" and marcaje.at[indice, 'rut'] == marcaje.at[i, 'rut']):
+    # Buscar posibles salidas válidas después de esta entrada
+    posibles_salidas = marcaje[
+        (marcaje['rut'] == fila['rut']) & 
+        (marcaje['día'] == fila['día']) & 
+        (marcaje['entrada/salida'] == "03") & 
+        (marcaje.index > indice)
+    ]
 
-        marcaje.at[indice, 'cierre'] = "Tiene cierre"
-        marcaje.at[i, 'cierre'] = "Tiene cierre"
-        return  # Salida encontrada
-
-    # Busca la siguiente salida válida
-    while i < len(marcaje.index):
-        if (marcaje.at[indice, 'entrada/salida'] == "01" and marcaje.at[i, 'entrada/salida'] == "03" and marcaje.at[indice, 'rut'] == marcaje.at[i, 'rut']):
-
-            marcaje.at[indice, 'cierre'] = "Tiene cierre"
-            marcaje.at[i, 'cierre'] = "Tiene cierre"
-            return  # Salida encontrada
+    if not posibles_salidas.empty:
+        # Tomar la primera salida encontrada
+        salida_index = posibles_salidas.index[0]
         
-        i += 1
+        # Marcar tanto la entrada como la salida
+        marcaje.at[indice, 'cierre'] = "Tiene cierre"
+        marcaje.at[salida_index, 'cierre'] = "Tiene cierre"
 
+        # Llamada recursiva para buscar un cierre adicional desde la fila de salida
+        registraSalida(marcaje, salida_index)
+    
     return
+
+
 
 def faltaSalida(marcaje, reglas):
     salida = marcaje.copy()
