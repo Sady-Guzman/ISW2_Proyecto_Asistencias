@@ -6,17 +6,18 @@
 
 {% block main %}
     <form action="/subir_reglas" method="post" enctype="multipart/form-data">
+        <!-- Este template solo se puede alcanzar con una sesion de administrador iniciada -->
         <div class="mb-3">
             <h2>Cargar horarios de trabajadores</h2>
         </div>
 
-        <!-- File input field -->
+        <!-- Form para subir archivo -->
         <div class="mb-3">
             <label for="formFile" class="form-label">Seleccionar archivo para cargar:</label>
             <input class="form-control" type="file" id="formFile" name="file">
         </div>
 
-        <!-- Submit button -->
+        <!-- button -->
         <div class="mb-3">
             <button class="btn btn-primary" type="submit">Cargar Archivo</button>
         </div>

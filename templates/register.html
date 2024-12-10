@@ -6,6 +6,8 @@
 
 {% block main %}
     <form action="/register" method="post">
+        <!-- Panel solo se puede alcanzar por usuario validado con sesion administrador -->
+         <!-- para registrar nuevo usuario depurador pide: RUT, Usuario, Contrasena, Confirmar contrasena -->
         <div class="mb-3">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="rut" placeholder="RUT sin puntos, con guion" type="text">
         </div>
