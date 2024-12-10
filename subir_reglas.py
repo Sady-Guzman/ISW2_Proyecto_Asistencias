@@ -32,36 +32,34 @@ def carga_reglas_func():
         
         ''' MANEJA NOMBRE DEL ARCHIVO SUBIDO'''
         
-        # Define the directory to save the file
-        upload_dir = '/app/horario_mensual'  # Must match the Docker volume mapping
-        os.makedirs(upload_dir, exist_ok=True)  # Ensure the directory exists
+        # Crear directorio para subir reglas
+        upload_dir = '/app/horario_mensual'  # Debe coincidir con el mapping del volumen de Docker
+        os.makedirs(upload_dir, exist_ok=True)  # Asegurar que el directorio exista
         
-        # Set the file path with the desired name
+        # Definir la ruta del archivo con el nombre 'horarios_creados.csv'
         desired_filename = 'horarios_creados.csv'
         file_path = os.path.join(upload_dir, desired_filename)
-        
-        
         
         ''' elimina horarios anteriormente subidos '''
         
         if os.path.exists(file_path):
             try:
                 os.remove(file_path)
-                print(f"Previous file {file_path} deleted successfully.")
+                print(f"El archivo anterior {file_path} fue eliminado exitosamente.")
             except Exception as e:
-                print(f"Error deleting the previous file: {e}")
+                print(f"Error al eliminar el archivo anterior: {e}")
                 flash('Error al eliminar el archivo previo', "error")
                 return redirect('/')
         
         ''' Guarda nuevos horarios '''
         try:
-            # Save the new file
+            # Guardar el archivo nuevo
             archivo.save(file_path)
 
             # Se procede a depurar las reglas.
             depurarReglas(file_path)
 
-            print(f"New file saved to: {file_path}")
+            print(f"El nuevo archivo fue guardado en: {file_path}")
             flash('Archivo subido exitosamente', "success")
             return redirect('/')
         except Exception as e:
@@ -82,26 +80,25 @@ def depurarReglas(file_path):
     data[['horaEn', 'minutoEn']] = data['entrada'].apply(dividir_hora_minuto)
     data[['horaSal', 'minutoSal']] = data['salida'].apply(dividir_hora_minuto)
 
-    # Convertir a enteros, manejando valores NaN (Solo por si acaso, creo que me tiraba error)
+    # Convertir a enteros, manejando valores NaN
     data['horaEn'] = data['horaEn'].fillna(0).astype(int)
     data['minutoEn'] = data['minutoEn'].fillna(0).astype(int)
     data['horaSal'] = data['horaSal'].fillna(0).astype(int)
     data['minutoSal'] = data['minutoSal'].fillna(0).astype(int)
 
-    ''' MOMENTANEAMENTE SE DEJA HARDCODEADA LA FECHA
     # Para obtener la fecha actual (Por si los del hospital nos pasan el horario completo)
     current_date = date.today()
     current_year = current_date.strftime("%Y")
     current_month = current_date.strftime("%m")
-    '''
 
-    current_year = "2024"
-    current_month = "8"
+
+    # current_year = "2024"
+    # current_month = "8"
 
     # Filtrado por año y mes
     filtered_data = data[(data['año'] == current_year) & (data['mes'] == current_month)]
 
-    # Reset the index if desired
+    # Resetear indice
     filtered_data = filtered_data.reset_index(drop=True)
 
     filtered_data.to_csv(file_path, index=False, encoding='utf-8')
