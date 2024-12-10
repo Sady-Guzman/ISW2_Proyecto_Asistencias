@@ -94,7 +94,7 @@ def admin_login():
 
 @session_routes.route("/logout")
 def logout():
-    """Log user out"""
+    """Log out de usuario"""
     session.clear()
     return redirect("/")
 
