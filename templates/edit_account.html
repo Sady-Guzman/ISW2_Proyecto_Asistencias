@@ -7,6 +7,7 @@
 {% block main %}
     <form action="/change_password" method="post">
 
+        <!-- Usa campos: Usuario, Contrasena nueva, Confirmar contrasena nueva -->
         <div class="mb-3">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Usuario a editar" type="text">
         </div>
@@ -16,6 +17,8 @@
         <div class="mb-3">
             <input class="form-control mx-auto w-auto" name="confirmation" placeholder="Confirmar nueva contraseña" type="password">
         </div>
+
+        <!-- Boton para confirmar -->
         <button class="btn btn-primary" type="submit">Cambiar</button>
     </form>
 {% endblock %}

@@ -14,7 +14,8 @@
 </head>
 
 <body>
-    <!-- Header with Navbar -->
+    <!-- Header con barra superior implementada directamente. -->
+    <!-- No se hereda contenido de layout.html porque se usa mas espacio en este panel.-->
     <nav class="bg-light border navbar navbar-expand-md navbar-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="/"><span class="blue">Clean</span> <span class="red">System</span></a>
@@ -32,7 +33,7 @@
         </div>
     </nav>
 
-    <!-- Container for Filters and Table -->
+    <!-- Container para filtros y tabla -->
     <div class="container-fluid my-4">
         <div class="row">
             <div class="col-12">
@@ -42,18 +43,18 @@
 
         <div class="row">
 
-            <!-- Filter Section -->
+            <!-- Seccion de filtros -->
             <div class="col-lg-2 filter-sidebar">
                 <h2>Filtros</h2>
                 <!-- LLAMA FUNCION DE FILTROS -->
                 <form method="POST" action="{{ url_for('visualizacion.apply_filters') }}">
-                    <!-- Filter by RUT -->
+                    <!-- Filtra por RUT -->
                     <div class="form-group">
                         <label for="filter-rut">RUT</label>
                         <input type="text" class="form-control" id="filter-rut" name="rut_filter" placeholder="Ingrese RUT">
                     </div>
                     
-                    <!-- Filter by Time Range -->
+                    <!-- Filtra por rango de tiempo -->
                     <div class="form-group mt-3">
                         <label for="from-hour">Hora Desde</label>
                         <input type="time" class="form-control" id="from-hour" name="from_hour">
@@ -63,7 +64,7 @@
                         <input type="time" class="form-control" id="to-hour" name="to_hour">
                     </div>
                 
-                    <!-- Entry/Exit Filter -->
+                    <!-- Filtra por Entrada/Salida -->
                     <div class="form-group mt-3">
                         <label for="entry-exit">Entrada/Salida</label>
                         <select class="form-control" id="entry-exit" name="tipo_marcaje">
@@ -73,7 +74,7 @@
                         </select>
                     </div>
                 
-                    <!-- Condition Filter -->
+                    <!-- Filtra por condicion de marcaje (con/sin problemas. Que tipo de problema) -->
                     <div class="form-group mt-3">
                         <label for="condition">Condición</label>
                         <select class="form-control" id="condition" name="condicion">
@@ -86,13 +87,14 @@
                         </select>
                     </div>
 
-                    <!-- Filter by Day -->
+                    <!-- Filtrar por dia -->
                     <div class="form-group mt-3">
                         <label for="filter-days" style="cursor: pointer;" onclick="toggleDays()">
                             Días <span style="font-size: small; color: gray;">(click para mostrar)</span>
                         </label>
                         
-                        <!-- Hidden checkbox list for days -->
+                        <!-- Los dias que estan disponibles se pasan por una variable desde visualizacion.py -->
+                         <!-- Por defecto estan escondidos. Usuario tiene que desplegar el menu para verlos -->
                         <div id="day-checkbox-list" style="display:none;">
                             {% for day in distinct_days %}
                                 <div class="form-check">
@@ -103,13 +105,13 @@
                         </div>
                     </div>
 
-                    <!-- Codigo horario trabajador Filter -->
+                    <!-- Filtro por Codigo horario trabajador -->
                     <div class="form-group mt-3">
                         <label for="filter-rut">Código horario</label>
                         <input type="text" class="form-control" id="filter-codigo" name="codigo_filter" placeholder="Ingrese codigo">
                     </div>
                     
-                    <!-- Apply Filters Button -->
+                    <!-- Boton para aplicar las condiciones de los forms de filtros -->
                     <button type="submit" class="btn btn-primary mt-4">Aplicar Filtros</button>
                 </form>
                 
@@ -128,19 +130,8 @@
                                 {% endfor %}
                             </tr>
                         </thead>
-                        <!-- <tbody>
-                            {% for row in table_data %}
-                                <tr>
-                                    <td class="checkbox-cell"><input type="checkbox" class="row-checkbox"></td>
-                                    {% for cell in row %}
-                                        <td>{{ cell }}</td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </tbody> -->
+                        
                         <tbody>
-
-                            <!--<form id="process_selected_rows" action="/process_selected_rows" method="POST">-->
 
                             <form id="process_selected_rows" action="/download_csv" method="POST">
                                 {% for idx, row in enumerate(table_data) %}
@@ -154,24 +145,14 @@
                                         {% endfor %}
                                     </tr>
                                 {% endfor %}
-                                <!--
-                                <div class="mt-3 text-end">
-                                    <button href="/process_selected_rows" class="btn btn-primary">Procesar Seleccionados</button>
-                                </div>-->
                             </form>
                         </tbody>
                     </table>
                 </div>
+                <!-- En sistema de reloj marcador que tiene hospital 1:Entrada y 3:Salida. -->
                 <p>Codigo: [1: Entrada] [3: Salida]</p>
+                
                 <!-- DESCARGAR ARCHIVO - RESULTADO -->
-                <!-- Button to download CSV -->
-
-                 <!--
-                <div class="mt-3 text-end">
-                    <a href="/download_csv" class="btn btn-primary">Descargar Archivo</a>
-                </div>
-                -->
-
                 <div class="mt-3 text-end">
                     <button type="submit" form="process_selected_rows" class="btn btn-primary">Descargar Archivo</button>
                 </div>
@@ -182,16 +163,16 @@
 
 
 
-<!-- Maneja filtro de dias -->
+<!-- JS Maneja filtro de dias -->
 <script>
-    // Function to toggle the visibility of the day checkboxes
+    // Funcion para mostrar/esconder la visibilidad de checkboxes de los dias disponibles
     function toggleDays() {
         const dayList = document.getElementById('day-checkbox-list');
         dayList.style.display = (dayList.style.display === 'none' || dayList.style.display === '') ? 'block' : 'none';
     }
 </script>
 
-<!-- JavaScript for toggling checkboxes -->
+<!-- JS para usar checkboxes a la izquierda de cada tupla -->
 <script>
     function toggleAllCheckboxes(source) {
         const checkboxes = document.querySelectorAll('.row-checkbox');
@@ -206,7 +187,7 @@
     document.getElementById('process_selected_rows').onsubmit = function(event) {
         event.preventDefault(); // Evita el envío predeterminado del formulario
 
-        // Get the current date and format it as day-month-year
+        // Recupera fecha actual y usa formato dia-mes-anho
         const currentDate = new Date();
         const day = String(currentDate.getDate()).padStart(2, '0');
         const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
@@ -253,13 +234,8 @@
     };
 </script>
 
-
-
-
-
-
-    <!-- Styles for the table and filter layout -->
-    <!-- Pasar a STYLES.CSS eventualmente -->
+    <!-- Estilos para la tabla y los filtros -->
+    <!-- No esta en style.css porque solo se usa aqui -->
     <style>
         body {
             overflow-x: hidden;

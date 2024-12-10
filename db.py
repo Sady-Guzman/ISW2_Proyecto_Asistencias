@@ -1,7 +1,7 @@
 import os
 import psycopg2
 
-# Database configuration
+# Configuracion de base de datos
 DATABASE_URL = os.getenv("DATABASE_URL")  # # Usa variable de entorno para hacer conexion a postgresql
 
 def get_db():

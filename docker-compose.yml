@@ -2,14 +2,14 @@
 
 services:
   flask_app:
-    # build: .  # Build the Flask app
+    # build: .  # Construye la app Flask
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
     environment:
-      - DATABASE_URL=postgresql://postgres:domino@db:5432/postgres  # Use service name 'db' for PostgreSQL
+      - DATABASE_URL=postgresql://postgres:domino@db:5432/postgres  # Usa nombre 'db' para el servicio PostgresSQL
     depends_on:
       - db
     volumes:
@@ -25,10 +25,10 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # Persist PostgreSQL data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Run init.sql on startup
+      - postgres_data:/var/lib/postgresql/data  # persiste informacion de base de datos
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Se ejecuta init.sql al inicio. Su contenido solo se usa si es la primera vez
     # profiles:
-    #   - testing
+    #   - testing # deprecated
 
   selenium:
     image: selenium/standalone-chrome:4.1.0
@@ -40,13 +40,13 @@ services:
     volumes:
       - /dev/shm:/dev/shm
     profiles:
-      - testing  # Add a profile to ensure it only runs when specified
+      - testing  # Se agrega tag de profile a los servicios de test para que no se inicien al ejecutar la aplicacion normalmente
 
   test:
     build:
       context: .
-      dockerfile: Dockerfile.test  # Specify the test Dockerfile
-    command: pytest # Only runs when test container is invoked
+      dockerfile: Dockerfile.test  # test usa otro dockerfile
+    command: pytest # Solo corre con este comando
     depends_on:
       - flask_app
       - selenium
@@ -56,7 +56,7 @@ services:
     volumes:
       - .:/app
     profiles:
-      - testing  # Add a profile to ensure it only runs when specified
+      - testing  # No se ejecuta con aplicacion normalemnte.
 
 volumes:
   postgres_data:
