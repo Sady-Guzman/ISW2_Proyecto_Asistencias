@@ -5,7 +5,7 @@ def depurar_archivo(file_path):
     """Function to clean and process the uploaded .log file."""
     
     try:
-        # Assuming your .log file can be read with Pandas
+        # Se carga el archivo en la carpeta temp
 
         marcaje = pd.read_csv(file_path, header= None, sep=',', 
                       names=["Codigo", "a", "entrada/salida", "rut","b", "hora", "minuto", "mes", "día", "año", "c", "d", "e", "f", "g", "h", "i", "j", "k"], 
@@ -16,7 +16,6 @@ def depurar_archivo(file_path):
         
         try:
             ruta_reglas = "/app/horario_mensual/horarios_creados.csv"
-            # names_reglas = ["Codigo", "nombre", "año", "mes", "entrada", "salida", "horaEn", "minutoEn", "horaSal", "minutoSal"]
             reglas = pd.read_csv(ruta_reglas, sep=',').dropna(axis='columns', how='all')
         except Exception as e:
             print(f"Error al cargar archivo de reglas {e}")
@@ -35,7 +34,7 @@ def depurar_archivo(file_path):
         print(f"Error DEPURACION - proceso DUPLICADOS: {e}")
         return None
 
-    '''REVISION DE SALIDAS'''
+    ''' REVISION DE SALIDAS '''
     try:
         marcaje['cierre'] = "No tiene cierre"
         marcaje = marcaje.sort_values(by=['rut', 'día', 'Hora']).reset_index(drop=True)
@@ -50,7 +49,7 @@ def depurar_archivo(file_path):
         print(f"Error DEPURACION - proceso TIENE SALIDA: {e}")
         return None
     
-    ''' FALTA SALIDA'''
+    ''' FALTA SALIDA '''
     try:
         marcaje = faltaSalida(marcaje, reglas)
         marcaje = marcaje.sort_values(by=['día', 'Hora', 'rut']).reset_index(drop=True)
@@ -69,8 +68,8 @@ def depurar_archivo(file_path):
         # Se termina la depuración y se eliminan las columnas que no sirven
         
         data = marcaje
-        # data = data.dropna()
-        # Save the DataFrame to a CSV file
+
+        # Guardar DataFrame en CSV en la carpeta temp
         path_temp = '/app/temp/datos_procesados.csv'
         data.to_csv(path_temp, index=False, encoding='utf-8')
         print(f"Se guarda archivo procesado en {path_temp}. [Mod Dep]")
@@ -147,7 +146,7 @@ def duplicados(marcaje):
     return entrada
 
 def registraSalida(marcaje, indice):
-     # Obtener la fila actual
+    # Obtener la fila actual
     fila = marcaje.iloc[indice]
 
     # Buscar posibles salidas válidas después de esta entrada
@@ -225,26 +224,11 @@ def marcaOpuesto(marcaje, reglas):
         for j, row2 in reglas.iterrows():
             if (codigoHorario == row2['Codigo']):
                 
-                horaEntrada = row2['horaEn']
-                minutoEntrada = row2['minutoEn']
-
                 horaSalida = row2['horaSal']
                 minutoSalida = row2['minutoSal']
 
                 break
             
-        '''
-        # Buscar entrada con una ventanad de 30 minutos en donde se marca salida y corregir
-        if (row['hora'] == horaEntrada and (minutoEntrada - 10) <= row['minuto'] and  row['minuto'] <= (minutoEntrada + 30) and rut == row['rut'] 
-            and row['entrada/salida'] == 3 and row['Error'] == "Ok" and row['cierre'] != "Tiene cierre"):
-
-            df.at[i, 'entrada/salida'] = 1
-            if (row['Error'] == 'Ok'):
-                df.at[i, 'Error'] = "Salida invertida a entrada"
-            else:
-                df.at[i, 'Error'] += ", Salida invertida a entrada"
-        '''
-
         # Buscar salida con una ventana de 10 minutos en donde se marca entrada y corregir
         if (row['hora'] == horaSalida and (minutoSalida - 10) <= row['minuto'] and  row['minuto'] <= (minutoSalida + 10) and rut == row['rut'] 
             and row['entrada/salida'] == "01" and row['Error'] == "Ok" and row['cierre'] != "Tiene cierre"):

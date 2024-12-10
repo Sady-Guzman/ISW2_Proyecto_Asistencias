@@ -13,8 +13,6 @@ def validar(df_corregido, selected_rows):
         mask = (df_corregido[cols_identificadores] == selected_row[cols_identificadores]).all(axis=1)
         indices.extend(df_corregido[mask].index.tolist())
 
-    print("Indices: ", indices)
-    # print(df_corregido.dtypes)
     try:
 
         df = df_corregido.copy()
@@ -62,17 +60,7 @@ def validar(df_corregido, selected_rows):
 
                         # Eliminar fila
                         df.drop(index = i, inplace=True)
-
-                        # df.at[i, 'hora'] = "00"
-                        # df.at[i, 'minuto'] = "00"
-                        # df.at[i, 'Hora'] = "00:00"      
-                        # df.at[i, "día"] += 1
-                        
-                    elif error == "Salida invertida a entrada":
-                        print("Se revierte SALIDA INVERTIDA A ENTRADA")
-
-                        df.at[i, 'entrada/salida'] = "03"
-                    
+                                         
                     elif error == "Entrada invertida a salida":
                         print("Se revierte ENTRADA INVERTIDA A SALIDA")
 

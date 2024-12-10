@@ -18,7 +18,7 @@ def crearHistorial(df, indices):
         
 
         fecha_actual = date.today().strftime("%d/%m/%Y")  # día/mes/año
-        # print(f"#########################################\nLISTA INDICES\n {indices}\n#########################################")
+  
         for index, row in df.iterrows():
             errores = row['Error']
             correciones = []
@@ -27,9 +27,7 @@ def crearHistorial(df, indices):
                 (errores != "Salida creada por duplicado") and (errores != "Entrada creada por duplicado")):
 
                 lista_errores = errores.split(", ")
-                # print("Lista errores: ", lista_errores)
-                # print("index actual", index)
-                
+
                 for error in lista_errores:
                     if error == "Entrada duplicada":
                         print("Se reconoce en historial ENTRADA DUPLICADA")
@@ -39,7 +37,6 @@ def crearHistorial(df, indices):
                         correciones.append("Se crea una entrada para salida duplicada")
                     elif error == "Salida automatica corregida":
                         print("Se reconoce en historial SALIDA AUTOMATICA")
-                        # correciones.append(f"Se cambia hora de salida 00:00 a hora de salida de reglas ({row['hora']})")
                         correciones.append(f"Se crea hora de salida según reglas ({row['Hora']})")
                     elif error == "Entrada invertida a salida":
                         print("Se reconoce en historial ENTRADA INVERTIDA A SALIDA")
@@ -87,7 +84,6 @@ def crearHistorial(df, indices):
         # Guardar el historial en el archivo CSV
         file_path = '/app/temp/historial.csv'
 
-        #historial.to_csv(file_path, index=False, header=False)
         historial.to_csv(file_path, index=False, header=['usuario', 'rut', 'fecha', 'error', 'cambio'])
         
     except Exception as e:
