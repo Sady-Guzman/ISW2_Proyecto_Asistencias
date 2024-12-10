@@ -8,24 +8,6 @@ def apology(message, code=400):
 
     return render_template("apology.html")
 
-# Descontinuado, Ahora existe version independiente para admin y usuario
-def login_required(f):
-    """
-    Decorate routes to require login.
-
-    https://flask.palletsprojects.com/en/latest/patterns/viewdecorators/
-    """
-
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if session.get("user_id") is None:
-            return redirect("/login")
-        return f(*args, **kwargs)
-
-    return decorated_function
-
-
-
 def user_login_required(f):
     """Decorador para requerir inicio de sesión de un usuario."""
     @wraps(f)
