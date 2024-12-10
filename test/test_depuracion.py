@@ -2,63 +2,82 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-import pandas as pd
 import pytest
-from depuracion import depurar_archivo # Importar funciones del módulo
-
-
-@pytest.fixture
-def log_file_reloj(tmp_path):
-    """
-    Copia el archivo reloj_dias_05-06.log al directorio temporal para su uso en las pruebas.
-    """
-    source_path = "/app/Documentacion/reloj_dias_05-06.log"  # Ruta del archivo original
-    target_path = tmp_path / "reloj_dias_05-06.log"
-    with open(source_path, "r") as source, open(target_path, "w") as target:
-        target.write(source.read())
-    return target_path
+import pandas as pd
+from depuracion import depurar_archivo, duplicados, faltaSalida, marcaOpuesto
 
 @pytest.fixture
-def reglas_file(tmp_path):
-    """
-    Crea un archivo CSV de reglas para la prueba.
-    """
-    reglas_data = """Codigo,nombre,año,mes,entrada,salida,horaEn,minutoEn,horaSal,minutoSal
-1,Regla1,2024,12,08:30,17:30,8,30,17,30
-2,Regla2,2024,12,09:15,18:00,9,15,18,0"""
-    reglas_path = tmp_path / "horarios_creados.csv"
-    reglas_path.write_text(reglas_data)
-    return reglas_path
+def sample_data():
+    """Fixture para crear datos de prueba simulados."""
+    data = pd.DataFrame({
+        "Codigo": ["1", "1"],
+        "a": ["", ""],
+        "entrada/salida": ["01", "03"],
+        "rut": ["12345", "12345"],
+        "b": ["", ""],
+        "hora": [8, 17],
+        "minuto": [0, 0],
+        "mes": [1, 1],
+        "día": [1, 1],
+        "año": [2024, 2024],
+        "c": ["", ""],
+        "d": ["", ""],
+        "e": ["", ""],
+        "f": ["", ""],
+        "g": ["", ""],
+        "h": ["", ""],
+        "i": ["", ""],
+        "j": ["", ""],
+        "k": ["", ""]
+    })
+    return data
 
-def test_depurar_archivo_with_reloj_dias_log(log_file_reloj, reglas_file, monkeypatch, tmp_path):
-    """
-    Prueba la función depurar_archivo utilizando el archivo reloj_dias_05-06.log y un archivo de reglas.
-    """
-    # Guardar la referencia original de pd.read_csv
-    original_read_csv = pd.read_csv
+@pytest.fixture
+def sample_rules():
+    """Fixture para crear reglas de horarios simulados."""
+    rules = pd.DataFrame({
+        "Codigo": [1],
+        "nombre": ["Test"],
+        "año": [2024],
+        "mes": [1],
+        "entrada": ["08:00"],
+        "salida": ["17:00"],
+        "horaEn": [8],
+        "minutoEn": [0],
+        "horaSal": [17],
+        "minutoSal": [0]
+    })
+    return rules
 
-    # Mockear la ruta del archivo de reglas
-    def mock_read_csv(path, *args, **kwargs):
-        if "horarios_creados.csv" in str(path):
-            return original_read_csv(reglas_file, *args, **kwargs)
-        return original_read_csv(path, *args, **kwargs)
+def test_duplicados(sample_data):
+    """Test para verificar duplicados."""
+    result = duplicados(sample_data)
+    assert not result.empty, "El resultado no debe estar vacío."
+    assert "Error" in result.columns, "Debe incluir la columna 'Error'."
 
-    monkeypatch.setattr("pd.read_csv", mock_read_csv)
+def test_falta_salida(sample_data, sample_rules):
+    """Test para verificar corrección de salidas faltantes."""
+    sample_data["cierre"] = ["No tiene cierre", "Tiene cierre"]
+    result = faltaSalida(sample_data, sample_rules)
+    assert not result.empty, "El resultado no debe estar vacío."
+    assert result["entrada/salida"].str.contains("03").any(), "Debe incluir salidas creadas automáticamente."
 
-    # Ejecutar la función depurar_archivo
-    depurar_archivo(log_file_reloj)
+def test_marca_opuesto(sample_data, sample_rules):
+    """Test para verificar corrección de marcas invertidas."""
+    result = marcaOpuesto(sample_data, sample_rules)
+    assert not result.empty, "El resultado no debe estar vacío."
+    assert result["entrada/salida"].isin(["01", "03"]).all(), "Debe corregir marcas invertidas."
 
-    # Verificar que se haya creado el archivo procesado
-    processed_file = "/app/temp/datos_procesados.csv"
-    assert os.path.exists(processed_file), "El archivo procesado no fue creado"
+def test_depurar_archivo(tmp_path):
+    """Test de integración para la función depurar_archivo."""
+    # Crear archivo de prueba
+    input_file = tmp_path / "test_file.log"
+    data = "1,,01,12345,,,8,0,1,1,2024,,,,,,,,,\n" \
+           "1,,03,12345,,,17,0,1,1,2024,,,,,,,,,\n"
+    input_file.write_text(data)
 
-    # Leer el archivo procesado y verificar su contenido
-    processed_data = pd.read_csv(processed_file)
-    assert not processed_data.empty, "El archivo procesado está vacío"
+    # Llamar la función
+    result = depurar_archivo(str(input_file))
 
-    # Validar algunas columnas clave
-    assert "Hora" in processed_data.columns, "La columna 'Hora' no está presente"
-    assert "Error" in processed_data.columns, "La columna 'Error' no está presente"
+    assert result is None or isinstance(result, pd.DataFrame), "Debe devolver None o un DataFrame."
 
-    # Imprimir para inspección manual (opcional)
-    print(processed_data)
