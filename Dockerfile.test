@@ -1,17 +1,17 @@
-# Use a lightweight Python image
+# Usa imagen python
 FROM python:3.9-slim
 
-# Set the working directory in the container
+# asigna directorio para app
 WORKDIR /app
 
-# Copy the requirements file to the working directory
+# Copia contenido de requerimientos.txt
 COPY requirements.txt ./
 
-# Install required Python packages
+# Instala las dependencias especificadas en el paso anterior
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your application code to the container
+# Copia el contenido de la aplicacion al container
 COPY . .
 
-# Run the tests using pytest
+# Corre comando iniciar
 CMD ["pytest"]

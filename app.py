@@ -9,6 +9,7 @@ from subir_reglas import subir_reglas
 '''
 
 temp/marcajes_original.csv -> Nombre que se le asigna al archivo subido por usuario. Originalmente es .log
+# Finalmente se decide no usar el nombre original del archivo como nombre de salida.
 temp/datos_procesados.csv -> Nombre de archivo original despues de pasar por modulo de depuracion
 
 ./horario_mensual -> persistente, guarda horarios que sube admin cada mes.
@@ -22,7 +23,6 @@ app.config['DEBUG'] = True
 # Configura la sesion para usar sistema de archivos en vez de cookies
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-# app.config['UPLOAD_FOLDER'] = 'temp'
 app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'temp')
 Session(app)
 
@@ -36,7 +36,7 @@ def after_request(response):
 
 @app.route("/")
 def index():
-    # Mostrar index como pagina de inicio
+    # Mostrar index como pagina de inicio en cualquier tipo de sesion (sin iniciar, admin, depurador)
     return render_template("index.html")
 
 # Importa los modulos (Blueprints)

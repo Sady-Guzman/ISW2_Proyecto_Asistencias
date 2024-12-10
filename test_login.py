@@ -3,6 +3,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
+'''  Hace tests de login con selelium, Usa perfil de test en compose '''
+# No se usa en aplicacion. Solo se uso para hacer tests durante desarrollo
+
 @pytest.fixture
 def browser():
     # Set up the Selenium WebDriver to connect to the remote Selenium server

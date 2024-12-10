@@ -22,20 +22,22 @@ nav .navbar-brand .green
     color: #2e944b;
 }
 
-/* Ensure the table container has scroll functionality */
+
+/* Funcionalidad de scroll para container de tabla */
 .scrollable-table {
-    max-height: 70vh; /* Adjusts height to 70% of the viewport */
+    max-height: 70vh; /* Ajusta tamano a 70% de pantalla usable */
     overflow-y: auto;
-    background-color: #f9f9f9; /* Light background for contrast */
+    background-color: #f9f9f9;
     padding: 1rem;
     border-radius: 8px;
     border: 1px solid #ddd;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Adjust the filter sidebar to occupy less space */
+
+/* Conf para barra de scroll */
 .filter-sidebar {
     border-left: 1px solid #ddd;
     padding-left: 20px;
-    max-width: 300px; /* Limits width to improve table space */
+    max-width: 300px;
 }
