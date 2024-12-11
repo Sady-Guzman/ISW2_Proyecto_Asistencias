@@ -16,7 +16,7 @@ def mock_data():
         "Hora": ["08:00", "12:00", "18:00"]
     }
     return pd.DataFrame(data)
-
+#HST-001 y HST-002
 def test_crear_historial(mock_data):
     # Mock del contenido de username.txt
     mock_username = "test_user"
@@ -40,7 +40,8 @@ def test_crear_historial(mock_data):
             assert args[0] == '/app/temp/historial.csv'
             assert "index" in kwargs and kwargs["index"] is False
             assert "header" in kwargs and kwargs["header"] == ['usuario', 'rut', 'fecha', 'error', 'cambio']
-
+            
+#HST-003
 def test_crear_historial_no_indices(mock_data):
     # Mock del contenido de username.txt
     mock_username = "test_user"
@@ -58,6 +59,7 @@ def test_crear_historial_no_indices(mock_data):
             # Validar que se procesó sin errores cuando indices es una lista vacía
             assert mock_to_csv.call_count == 1
 
+#HST-004
 def test_crear_historial_error(mock_data):
     # Simular un error al leer el archivo username.txt
     with patch("builtins.open", side_effect=FileNotFoundError):

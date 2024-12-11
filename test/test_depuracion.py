@@ -30,6 +30,10 @@ def sample_data():
         "j": ["", ""],
         "k": ["", ""]
     })
+    
+    # Crear la columna 'Hora' concatenando 'hora' y 'minuto'
+    data['Hora'] = data['hora'].astype(str).str.zfill(2) + ':' + data['minuto'].astype(str).str.zfill(2)
+    
     return data
 
 @pytest.fixture
@@ -49,25 +53,26 @@ def sample_rules():
     })
     return rules
 
+#PDD-001
 def test_duplicados(sample_data):
     """Test para verificar duplicados."""
     result = duplicados(sample_data)
     assert not result.empty, "El resultado no debe estar vacío."
     assert "Error" in result.columns, "Debe incluir la columna 'Error'."
-
+#PDD-002
 def test_falta_salida(sample_data, sample_rules):
     """Test para verificar corrección de salidas faltantes."""
     sample_data["cierre"] = ["No tiene cierre", "Tiene cierre"]
     result = faltaSalida(sample_data, sample_rules)
     assert not result.empty, "El resultado no debe estar vacío."
     assert result["entrada/salida"].str.contains("03").any(), "Debe incluir salidas creadas automáticamente."
-
+#PDD-003
 def test_marca_opuesto(sample_data, sample_rules):
     """Test para verificar corrección de marcas invertidas."""
     result = marcaOpuesto(sample_data, sample_rules)
     assert not result.empty, "El resultado no debe estar vacío."
     assert result["entrada/salida"].isin(["01", "03"]).all(), "Debe corregir marcas invertidas."
-
+#PDD-004
 def test_depurar_archivo(tmp_path):
     """Test de integración para la función depurar_archivo."""
     # Crear archivo de prueba

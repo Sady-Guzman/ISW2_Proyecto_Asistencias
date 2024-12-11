@@ -74,7 +74,7 @@ def test_PSA_003(client):
 
     # Verificar redirección correcta
     assert response.status_code == 302
-    assert response.location.endswith('/carga')
+    assert response.location.endswith('/cargar')
 
     # Capturar mensajes flash desde la sesión
     with client.session_transaction() as session:
@@ -109,24 +109,31 @@ def test_PSA_004(client):
 
 def test_PSA_005(client):
     """
-    PSA 005: Verifica que el nombre original del archivo se guarde correctamente
+    PSA 005: Verifica que el nombre original del archivo se guarde correctamente.
     """
+    # Crear archivo de prueba
     with open('registro.log', 'w') as f:
         f.write('Contenido de prueba')
 
+    # Simular la carga del archivo
     with open('registro.log', 'rb') as archivo:
-        client.post('/cargar', data={'file': archivo}, content_type='multipart/form-data')
+        response = client.post('/cargar', data={'file': archivo}, content_type='multipart/form-data')
 
-    os.remove('registro.log')  # Limpieza del archivo local
+    # Limpieza del archivo local
+    os.remove('registro.log')
 
-    # Verificar que el archivo de nombre original exista
-    nombre_archivo = os.path.join(app.config['UPLOAD_FOLDER'], 'NOMBRE_ORIGINAL_ARCHIVO.txt')
-    assert os.path.exists(nombre_archivo)
+    # Verificar redirección a la ruta esperada
+    assert response.status_code == 302, "La carga no generó redirección como se esperaba."
+    assert response.location.endswith('/visualizacion'), "La redirección no apunta a /visualizacion."
+
+    # Verificar que el archivo con el nombre original exista
+    nombre_archivo = "/app/temp/NOMBRE_ORIGINAL_ARCHIVO.txt"
+    assert os.path.exists(nombre_archivo), "El archivo con el nombre original no se creó correctamente."
 
     # Verificar contenido del archivo
     with open(nombre_archivo, 'r') as f:
         contenido = f.read()
-    assert contenido == 'registro.log'
+    assert contenido == 'registro.log', "El contenido del archivo de nombre original no es correcto."
 
 
 def test_PSA_006(client):

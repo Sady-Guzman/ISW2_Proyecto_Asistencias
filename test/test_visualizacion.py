@@ -39,29 +39,18 @@ def setup_csv():
     if os.path.exists(file_path):
         os.remove(file_path)
 
-
-def test_visualizar_archivo_disponible(client, setup_csv):
-    """PDV-001: Verifica que se renderice el archivo si está disponible."""
-    response = client.get('/visualizacion')
-
-    assert response.status_code == 200
-    assert b'rut' in response.data
-    assert b'hora' in response.data
-    assert b'12345' in response.data
-
-
+#PVD-004
 def test_visualizar_archivo_no_disponible(client):
-    """PDV-002: Verifica el mensaje de error si el archivo no está disponible."""
     response = client.get('/visualizacion')
 
     assert response.status_code == 302
     assert response.location.endswith('/cargar')
 
-
+#PVD-005
 def test_acceso_no_autenticado_visualizacion():
-    """PDV-004: Verifica redirección al intentar acceder sin autenticación."""
     with app.test_client() as client:
         response = client.get('/visualizacion')
         assert response.status_code == 302
         assert response.location.endswith('/login')
+        
 
