@@ -12,5 +12,8 @@ Detectando el mismo día del registro los marcajes duplicados, falta de marcaje 
 ---
 ### Carpetas:
 
-* Documentación: Historial de propuestas, respuestas de clientes, diagramas, definiciones, y cartas Gantt de desarrollo y entregas en forma de PDF's
-* Plantilla: plantilla Flask usada para montar proyecto, test_env se usa para probar como dockerizar con postgres en vez de sqlite3.
+* Documentación: Historial de propuestas, respuestas de clientes, diagramas, definiciones, y cartas Gantt de desarrollo y entregas en forma de PDF's.
+* Templates: archivos HTML de las distintas páginas.
+* static: Imagenes/iconos/logos.
+* temp: Se usa durante el funcionamiento del sistema para guardar archivos temporales. Son eliminados al terminar la ejecución.
+* horario_mensual: Directorio con volumen declarado en docker-compose. Se usa para guardar las reglas de horarios creados. Se actualiza cada mes.
