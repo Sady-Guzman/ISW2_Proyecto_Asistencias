@@ -6,18 +6,20 @@
 
 {% block main %}
     <form action="/register" method="post">
+        <!-- Panel solo se puede alcanzar por usuario validado con sesion administrador -->
+         <!-- para registrar nuevo usuario depurador pide: RUT, Usuario, Contrasena, Confirmar contrasena -->
         <div class="mb-3">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="rut" placeholder="RUT sin puntos, con guion" type="text">
         </div>
         <div class="mb-3">
-            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username" type="text">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Nombre de usuario" type="text">
         </div>
         <div class="mb-3">
-            <input class="form-control mx-auto w-auto" name="password" placeholder="Password" type="password">
+            <input class="form-control mx-auto w-auto" name="password" placeholder="Contraseña" type="password">
         </div>
         <div class="mb-3">
-            <input class="form-control mx-auto w-auto" name="confirmation" placeholder="Confirm Password" type="password">
+            <input class="form-control mx-auto w-auto" name="confirmation" placeholder="Confirmar Contraseña" type="password">
         </div>
-        <button class="btn btn-primary" type="submit">Register</button>
+        <button class="btn btn-primary" type="submit">Registrar</button>
     </form>
 {% endblock %}

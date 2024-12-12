@@ -1,22 +1,23 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Carga
+    Carga horarios
 {% endblock %}
 
 {% block main %}
-    <form action="/cargar" method="post" enctype="multipart/form-data">
+    <form action="/subir_reglas" method="post" enctype="multipart/form-data">
+        <!-- Este template solo se puede alcanzar con una sesion de administrador iniciada -->
         <div class="mb-3">
-            <h2>Cargar marcajes</h2>
+            <h2>Cargar horarios de trabajadores</h2>
         </div>
 
-        <!-- Subir archivo marcajes con este form-->
+        <!-- Form para subir archivo -->
         <div class="mb-3">
             <label for="formFile" class="form-label">Seleccionar archivo para cargar:</label>
             <input class="form-control" type="file" id="formFile" name="file">
         </div>
 
-        <!-- Boton manda form -->
+        <!-- button -->
         <div class="mb-3">
             <button class="btn btn-primary" type="submit">Cargar Archivo</button>
         </div>

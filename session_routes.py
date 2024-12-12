@@ -10,23 +10,20 @@ session_routes = Blueprint('session_routes', __name__)
 
 @session_routes.route("/login", methods=["GET", "POST"])
 def login():
-    """Log user in"""
+    """Log in del usurio"""
     
     session.clear()
 
     if request.method == "POST":
         if not request.form.get("username"):
-            # return apology("must provide username", 403)
             flash("Credenciales incorrectas. Debe ingresar nombre de usuario.", "error")
             return render_template("login.html")
         
         if request.form.get("username") == "admin":
-            # return apology("Reserved username", 403)
             flash("Credenciales reservadas. Intente con otro usuario.", "error")
             return render_template("login.html")
 
         if not request.form.get("password"):
-            # return apology("must provide password", 403)
             flash("Credenciales incorrectas. Debe ingresar contraseña.", "error")
             return render_template("login.html")
 
@@ -38,12 +35,19 @@ def login():
         db.close()
 
         if len(rows) != 1 or not check_password_hash(rows[0][3], request.form.get("password")):
-            # return apology("invalid username/password", 403)
             flash("Credenciales incorrectas. Usuario/Contraseña.", "error")
             return render_template("login.html")
 
         session["user_id"] = rows[0][0]
         session["is_admin"] = False
+
+        # Guardar nombre de usuario
+        user = request.form.get("username")
+        temp_path = "/app/temp/username.txt"
+
+        # Guardar el nombre en el archivo
+        with open(temp_path, "w") as file:
+            file.write(user)
         
         return redirect("/")
 
@@ -52,23 +56,20 @@ def login():
 
 @session_routes.route("/adlogin", methods=["GET", "POST"])
 def admin_login():
-    """Log admin in"""
+    """Log in de admin """
     
     session.clear()
 
     if request.method == "POST":
         if not request.form.get("username"):
-            # return apology("must provide admin username", 403)
             flash("Credenciales incorrectas. Debe ingresar un usuario.", "error")
             return render_template("adlogin.html")
         
         if request.form.get("username") != "admin":
-            # return apology("Invalid ADMIN user", 403)
             flash("Credenciales incorrectas. Debe usar cuenta de Administrador.", "error")
             return render_template("adlogin.html")
 
         if not request.form.get("password"):
-            # return apology("must provide admin password", 403)
             flash("Credenciales incorrectas. Debe ingresar contraseña.", "error")
             return render_template("adlogin.html")
 
@@ -80,11 +81,10 @@ def admin_login():
         db.close()
 
         if len(rows) != 1 or not check_password_hash(rows[0][3], request.form.get("password")):
-            # return apology("invalid username and/or password", 403)
             flash("Credenciales incorrectas. Usuario o Contraseña incorrectos.", "error")
             return render_template("adlogin.html")
         
-        session['is_admin'] = True  # or False for normal users
+        session['is_admin'] = True 
         session["user_id"] = rows[0][0]
             
         return redirect("/")
@@ -94,7 +94,7 @@ def admin_login():
 
 @session_routes.route("/logout")
 def logout():
-    """Log user out"""
+    """Log out de usuario"""
     session.clear()
     return redirect("/")
 

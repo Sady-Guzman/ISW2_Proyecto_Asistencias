@@ -5,25 +5,39 @@
 {% endblock %}
 
 {% block main %}
-    <main class="container py-5 text-center">
-        <table class="table table-striped">
-            <thead>
+<main class="container py-5 text-center">
+    <table class="table table-striped">
+        <!--  Este template solo se puede alvanzar por un usuario validado como administrador -->
+        <thead>
+            <tr>
+                <th class="text-start">ID de usuario</th>
+                <th class="text-start">RUT de usuario</th>
+                <th class="text-start">Nombre de usuario</th>
+                <th class="text-start">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+             <!-- Usa JINJA para construir tabla dinamicamente con un loop -->
+            {% for user in users %}
                 <tr>
-                    <th class="text-start">ID de usuario</th>
-                    <th class="text-start">RUT de usuario</th>
-                    <th class="text-start">Nombre de usuario</th>
+                    <td class="text-start">{{ user[0] }}</td> <!--  id -->
+                    <td class="text-start">{{ user[1] }}</td> <!--  rut -->
+                    <td class="text-start">{{ user[2] }}</td> <!--  username -->
+                    <td class="text-start">
+                         <!-- Comprueba si el usuario es ADMIN o no para saber si mostrar boton de eliminar cuenta-->
+                        {% if user[2] != 'admin' %}
+                            <form action="/delete_account" method="POST" style="display:inline;">
+                                <input type="hidden" name="user_id" value="{{ user[0] }}"> <!-- Manda ID de usuario -->
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        {% else %}
+                            <!-- No muestra boton eliminar para cuenta admin, Solo dice 'protegido' -->
+                            <span class="text-muted">Protegido</span>
+                        {% endif %}
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                <!-- JINJA FOR LOOP to build the table rows dynamically -->
-                {% for user in users %}
-                    <tr>
-                        <td class="text-start">{{ user[0] }}</td> <!-- Display id -->
-                        <td class="text-start">{{ user[1] }}</td> <!-- Display rut -->
-                        <td class="text-start">{{ user[2] }}</td> <!-- Display username -->
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </main>
+            {% endfor %}
+        </tbody>
+    </table>
+</main>
 {% endblock %}

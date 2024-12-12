@@ -31,13 +31,3 @@ SELECT * FROM users;
 
 #APP container bash
 docker-compose exec -it flask_app /bin/bash
-
-
-
-# TESTING
-
-build compose: docker compose up --build
-start testing containers: docker-compose --profile testing up --build 
-
-* buscar forma de no necesitar selenium en containers que se ejecutan por defecto, La idea es agregarlo a perfil de testing.
-    Por ahora hacer esto resulta en fallo de pruebas

@@ -5,28 +5,30 @@ from session_routes import session_routes
 from manejo_cuentas import manejo_cuentas
 from carga_archivo import carga_archivo
 from visualizacion import visualizacion
-
+from subir_reglas import subir_reglas
 '''
 
 temp/marcajes_original.csv -> Nombre que se le asigna al archivo subido por usuario. Originalmente es .log
+# Finalmente se decide no usar el nombre original del archivo como nombre de salida.
 temp/datos_procesados.csv -> Nombre de archivo original despues de pasar por modulo de depuracion
 
+./horario_mensual -> persistente, guarda horarios que sube admin cada mes.
 '''
 
 app = Flask(__name__)
 app.jinja_env.globals.update(enumerate=enumerate)
 app.config['DEBUG'] = True
 
-# Configure session to use filesystem (instead of signed cookies)
+
+# Configura la sesion para usar sistema de archivos en vez de cookies
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-# app.config['UPLOAD_FOLDER'] = 'temp'
-app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'temp')  # or an absolute path
+app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'temp')
 Session(app)
 
 @app.after_request
 def after_request(response):
-    """Ensure responses aren't cached"""
+    """Asegura que las respuestas no se guardan en cache"""
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
@@ -34,15 +36,15 @@ def after_request(response):
 
 @app.route("/")
 def index():
-    """Show index"""
-    # Dejar vacio o poner informacin?
+    # Mostrar index como pagina de inicio en cualquier tipo de sesion (sin iniciar, admin, depurador)
     return render_template("index.html")
 
-# Import other apps (blueprints)
+# Importa los modulos (Blueprints)
 app.register_blueprint(session_routes)
 app.register_blueprint(manejo_cuentas)
 app.register_blueprint(carga_archivo)
 app.register_blueprint(visualizacion)
+app.register_blueprint(subir_reglas)
 
 if __name__ == "__main__":
     app.run()

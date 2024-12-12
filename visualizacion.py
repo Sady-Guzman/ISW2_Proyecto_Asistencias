@@ -4,14 +4,16 @@ from helpers import user_login_required
 import pandas as pd
 import os
 from validacion import validar
-
+from datetime import date
+import json
+from historial import crearHistorial
 
 visualizacion = Blueprint('visualizacion', __name__)
 
 @visualizacion.route('/visualizacion')
 @user_login_required
 def visualizar():
-    """Display the contents of the uploaded CSV file."""
+    """Mostrar los contenidos del csv cargado."""
 
     
     # Path al archivo a mostrar (Archivo ya paso por depuracion)
@@ -20,51 +22,53 @@ def visualizar():
     
     
     if os.path.exists(file_path):
-        # Load the CSV file with pandas
-        df = pd.read_csv(file_path)
+        # Cargar CSV 
+        df = pd.read_csv(file_path, dtype={'Codigo': str, "entrada/salida": str})
         
         # Seleccionar solo las cols que tienen info relevante.
         # El archivo que generan los relojes tiene varios campos que no se usan.
-        # 0: Codigo, 2: Entrada(1)/Salida(3), 3: RUT, 5: Hora, 6: Minuto, 7: Mes, 8: Dia, 9: Anho, 21: Estado/Error/Solucion
+        # 0: Codigo, 2: Entrada(1)/Salida(3), 3: RUT, 5: Hora, 6: Minuto, 7: Mes, 8: Dia, 9: Anho, 20: Estado/Error/Solucion
         df_filtrado = df.iloc[:, [0, 2, 3, 5, 6, 7, 8, 9, 20]]
 
-        # Prepare data for rendering in the template
+        # Preparar los datos para el rendering en el template
         table_columns = df_filtrado.columns.tolist()
         table_data = df_filtrado.values.tolist()
         
-        return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data)
+        #  Obtener todos los días distintos para el filtrado de días
+        df['día'] = df['día'].astype(str)  # Días deben ser string
+        distinct_days = sorted(df['día'].unique())  # Se ordenan los días
+        
+        return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data, distinct_days=distinct_days)
     else:
         flash("Archivo no disponible. Por favor importar archivo.", "error")
         return redirect('/cargar')
 
     
 
-''' FUNC DE FILTROS PENDIENTE'''
-
-''' Version en desarrollo '''
 
 @visualizacion.route('/apply_filters', methods=['POST'])
 @user_login_required
 def apply_filters():
-    """Apply filters to the displayed data."""
-    from flask import request  # Import request module to get form data
+    """Aplicar filtros a los datos mostrados"""
+    from flask import request  # Importar el módulo request
 
-    # Get filter values from the form
+    # Obtener los filtros seleccionados del form
     rut_filter = request.form.get('rut_filter')
     from_hour = request.form.get('from_hour')
     to_hour = request.form.get('to_hour')
     tipo_marcaje = request.form.get('tipo_marcaje')
     condicion = request.form.get('condicion')
     codigo_filter = request.form.get('codigo_filter')
+    day_filter = request.form.getlist('day_filter')
+
 
     file_path = '/app/temp/datos_procesados.csv'
     
     # Filtros estan en desarrollo. No aplica en MAIN BRANCH
     try:
-        # Load the CSV file with pandas
-        df = pd.read_csv(file_path)
+        # Cargar CSV con pandas
+        df = pd.read_csv(file_path, dtype={'Codigo': str, "entrada/salida": str})
         
-
         # FILTRO RUT
         if rut_filter:
             df = df[df['rut'] == rut_filter]
@@ -82,41 +86,26 @@ def apply_filters():
             to_hour = pd.to_datetime(to_hour, format='%H:%M').time()
             df = df[df['time'] <= to_hour]
 
-        
-        # Filtro por ENTRADA / SALIDA
-        # if tipo_marcaje:
-
-        #     # Asigna el numero correspondiente a el marcaje para filtrar en df
-        #     if tipo_marcaje == "Entrada":
-        #         tipo_numerico = "01"
-        #     if tipo_marcaje == "Salida":
-        #         tipo_numerico = "03"
-
-        #     # Compara con codigo numerico
-        #     df = df[df['entrada/salida'] == tipo_numerico]
-
-
         # Filtro por ENTRADA / SALIDA
         if tipo_marcaje and tipo_marcaje != 'any':
-            # Map 'Entrada' to '01' and 'Salida' to '03'
-            # Ojo con codigo, Deberia tener 0 a la izquierda
+            # Map 'Entrada' a '01' y 'Salida' a '03'
             
             if tipo_marcaje == "entrada":
-                tipo_numerico = "1"
+                tipo_numerico = "01"
             else:
-                tipo_numerico = "3"
+                tipo_numerico = "03"
             
 
             print(f"El tipo de marcaje que se busca es: {tipo_marcaje}, y tipo_numerico: {tipo_numerico}")
 
             try:
-                # Ensure that the column is treated as a string to match "01" or "03"
+                # Columna debe ser tratada como string por registros "01" o "03" (entrada, salida respectivamente)
                 df['entrada/salida'] = df['entrada/salida'].astype(str)
                 
-                # Apply the filter based on `tipo_numerico`
+                # Aplicar el filtro basado en `tipo_numerico`
                 df = df[df['entrada/salida'] == tipo_numerico]
             except Exception as e:
-                print(f"Error filtering entrada/salida: {e}")
+                print(f"Error filtrando entrada/salida: {e}")
                 flash("Error al filtrar por entrada/salida.", "error")
                 return render_template("apology.html")
         
@@ -127,7 +116,7 @@ def apply_filters():
 
             print("Valor de variable condicion: ", condicion)
 
-            # Define keywords based on the selected condition
+            # Definir keywords basadas en la selección
             keywords = []
             if condicion == "duplicado":
                 keywords = ["duplicado", "duplicada"]
@@ -135,44 +124,46 @@ def apply_filters():
                 keywords = ["automatica"]
             elif condicion == "invertir":
                 keywords = ["invertida"]
+            elif condicion == "problema":
+                keywords = ["duplicado", "duplicada", "invertida", "automatica"]
             elif condicion == "correcto":
-                print("Se elige Correcto en filtro")
+                # print("Se elige Correcto en filtro")
                 keywords = ["Ok"]
 
-            print(" Pasa Keywords")
+            # print(" Pasa Keywords")
 
-            # Debug: Print the filtered DataFrame to confirm
+            # Debug: Print el dataframe filtrado para revisar
             # print(df.head())
             
-            # If there are keywords to filter, apply the filter
+            # Si hay keywords (errores) seleccionadas se filtra
             if keywords:
-                # Combine the keywords into a regex pattern (e.g., 'duplicado|duplicada')
+                # Combinar las keywords en un patron
                 pattern = '|'.join(keywords)
 
-                # Debug: Print the pattern for confirmation
+                # Debug: Print el patron para revisar
                 print("Pattern:", pattern)
 
 
                 try:
-                    # Check the 'error' column first for any NaN values, strip whitespaces, and apply filter
-                    df['Error'] = df['Error'].str.strip()  # Remove leading/trailing spaces
+                    # Revisar si las columnas de 'error' primero por algún valor NaN, eliminar espacio en blanco, y aplicar filtro
+                    df['Error'] = df['Error'].str.strip()  # Eliminar espacios
                 except Exception as e: 
                     print(f"Error str.strip condicion: {e}")
                     return render_template("apology.html")
                 try:
-                     # Filter rows where 'error' contains any of the keywords as substrings
+                     # Filtrar filas donde 'error' alguna de los substrings de keywords
                     df = df[df['Error'].str.contains(pattern, case=False, na=False)]
 
                 except Exception as e: 
-                    print(f"Error filtering condicion: {e}")
+                    print(f"Error filtrando condicion: {e}")
                     return render_template("apology.html")
 
 
-                # Debug: Print the filtered DataFrame to confirm
+                # Debug: Print el dataframe filtrado para revisar
                 print(df.head())
 
             else:
-                print("No keywords to filter on.")
+                print("No hay errores seleccionados")
                 
         
         
@@ -181,9 +172,27 @@ def apply_filters():
             print("Codigo ingresado: ", codigo_filter)
             print(df['Codigo'].head())
 
-            # Convert 'Codigo' column to string for comparison
+            # Converitr 'Código' como string para comparar
             df['Codigo'] = df['Codigo'].astype(str)
             df = df[df['Codigo'] == codigo_filter]
+
+        
+        # Obtener todos los días distintos para el filtrado
+        df['día'] = df['día'].astype(str)  # La columna 'día' debe ser string
+        distinct_days = sorted(df['día'].unique())  # Ordenar los días
+        
+        # Aplicar el filtro de 'día' si fue seleccionado
+        if day_filter:
+            print("Días filtrados:", day_filter)
+            try:
+                # La columna 'día' debe ser string
+                df['día'] = df['día'].astype(str)
+                # Filtrar los días que coincidan con los días seleccionados
+                df = df[df['día'].isin(day_filter)]
+            except Exception as e:
+                print(f"Error en el filtrado de días: {e}")
+                flash("Error al filtrar por días.", "error")
+                return render_template("apology.html")
         
 
 
@@ -195,12 +204,12 @@ def apply_filters():
         # 0: Codigo, 2: Entrada(1)/Salida(3), 3: RUT, 5: Hora, 6: Minuto, 7: Mes, 8: Dia, 9: Anho, 21: Estado/Error/Solucion
         df_filtrado = df.iloc[:, [0, 2, 3, 5, 6, 7, 8, 9, 20]]
         
-        # Prepare data for rendering in the template
+        # Se preparan los datos para el render
         table_columns = df_filtrado.columns.tolist()
         table_data = df_filtrado.values.tolist()
         
-        # Render the filtered data back to the visualization page
-        return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data, enumerate=enumerate)
+        # Carga los datos filtrados en la página de visualizacion
+        return render_template("visualizacion.html", table_columns=table_columns, table_data=table_data, distinct_days=distinct_days, enumerate=enumerate)
     
     except Exception as e:
         print(f"Error: {e}")        
@@ -214,24 +223,34 @@ def apply_filters():
 @user_login_required
 def download_csv():
 
-
+    # Recuperar filas seleccionadas como JSON
     selected_rows = request.form.getlist('selected_rows')
-    file_path = '/app/temp/datos_procesados.csv'
-    df = pd.read_csv(file_path)
 
+    file_path = '/app/temp/datos_procesados.csv'
+    df = pd.read_csv(file_path, dtype={"Codigo": str,"a": str, "entrada/salida": str, "b": str,"c": str,"d": str,"e": str,"f": str,"g": str,"h": str,"i": str,"j": str,"k": str})
+    
     if not selected_rows:
 
-        try:
-            
-            df_final = df.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
-            # Save the DataFrame as a CSV
+        try:          
+            df_final = df.copy()
+            df_final.drop(columns=['Hora', 'Error', 'cierre'], inplace=True)
+            df_final['hora'] = df_final['hora'].apply(lambda x: f"{x:02}")
+            df_final['minuto'] = df_final['minuto'].apply(lambda x: f"{x:02}")
+            df_final['mes'] = df_final['mes'].apply(lambda x: f"{x:02}")
+            df_final['día'] = df_final['día'].apply(lambda x: f"{x:02}")
+            df_final['año'] = df_final['año'].apply(lambda x: f"{x:02}")
+
+            crearHistorial(df, None)
+
+            # Guardar dataframe a csv
             df_final.to_csv(file_path, index=False, header=False)
-            # Send the file to the user for download
+
+            # Enviar documento para descargar
             return send_file(file_path, 
                             as_attachment=True, 
                             download_name="filtered_data.csv",
                             mimetype='text/csv')
-        
+
         except Exception as e:
             print(f"Error while generating CSV: {e}")
             flash("Error al generar el archivo CSV.", "error")
@@ -239,71 +258,50 @@ def download_csv():
 
     else:
         try:
-            selected_indices = list(map(int, selected_rows))
-            print("indice:", selected_indices)
+            # Convertir las filas seleccionadas en DataFrame
+            columnas = ["Codigo", "entrada/salida", "rut", "hora", "minuto", "mes", "día", "año", "Error"]
+            
+            try:
+                selected_rows = [json.loads(row) for row in selected_rows]
+                print("FILAS SELECCIONADAS\n", selected_rows)
+            except Exception as e:
+                print("Error al cargar Filas: ", e)
+                
+            df_selected = pd.DataFrame(selected_rows, columns=columnas)
 
-            df_final = validar(df, selected_indices)
+            # Convertir la columna 'día' a tipo entero
+            df_selected["día"] = df_selected["día"].astype(int)
+
+            df_final = validar(df, df_selected)
 
             df_final = df_final.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]
-            # Save the DataFrame as a CSV
+
+            # Guardar DataFrame como un CSV
             df_final.to_csv(file_path, index=False, header=False)
-            # Send the file to the user for download
+
+            # Enviar documento para descargar 
             return send_file(file_path, 
                             as_attachment=True, 
                             download_name="filtered_data.csv",
                             mimetype='text/csv')
-        
+
         except Exception as e:
             print(f"Error al generar el archivo CSV: {e}")
             flash("Error al generar el archivo CSV.", "error")
             return redirect('/visualizacion')
+
         
 
-    
-
-# --------------------------------------------------------------------------------------------------------
-
-'''
-@visualizacion.route('/process_selected_rows', methods=['GET', 'POST'])
-@user_login_required
-def process_selected_rows():
-    """Process selected rows based on checkboxes."""
-    from flask import request
-
-    file_path = '/app/temp/datos_procesados.csv'
-    
-    print("LLEGA A process selected rows")
-    
+@visualizacion.route('/download_historial', methods=['GET'])
+def download_historial():
     try:
-        print("Entra a try")
-        # Retrieve selected row indices from the form
-        selected_rows = request.form.getlist('selected_rows')
-        
-        if not selected_rows:
-            flash("No se seleccionaron filas.", "warning")
-            return redirect('/visualizacion')
-        
-        # Convert the selected row indices to integers
-        selected_indices = list(map(int, selected_rows))
-        print("indice:", selected_indices)
-        
-        # Load the CSV file into a DataFrame
-        df = pd.read_csv(file_path)
-        
-        # Select only the rows corresponding to the selected indices
-        df_selected = df.iloc[selected_indices]
-        
-        # Example: Save the selected rows as a new CSV (optional)
-        selected_file_path = '/app/temp/selected_data.csv'
-        # DEBUG
-        print("df_selcted.tocsv: selected_file_path <<< /app/temp/selected_data.csv ")
-        df_selected.to_csv(selected_file_path, index=False)
-        
-        # Example: Send the filtered DataFrame as a downloadable file
-        return send_file(selected_file_path, as_attachment=True, download_name="selected_data.csv")
-    except Exception as e:
-        print(f"Error while processing selected rows: {e}")
-        flash("Error al procesar las filas seleccionadas.", "error")
-        return redirect('/visualizacion')
+        file_path = '/app/temp/historial.csv'
+        fecha_actual = date.today().strftime("%d_%m_%Y")  # día_mes_año
+        nombre = f"Historial_{fecha_actual}.csv" # Crear el nombre del archivo 
 
-'''
+        return send_file(file_path, as_attachment=True, download_name=nombre)
+    except Exception as e:
+        print(f"Error: {e}")
+        flash("Error al descargar el historial.", "error")
+        return redirect('/visualizacion')
+    

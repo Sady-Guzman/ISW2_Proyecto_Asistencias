@@ -11,17 +11,17 @@ manejo_cuentas = Blueprint('manejo_cuentas', __name__)
 @manejo_cuentas.route("/register", methods=["GET", "POST"])
 @admin_login_required
 def register():
-    """Register new user"""
+    """Registrar nuevo usuario"""
     
     if request.method == "GET":
-        # In case of GET simply shows register page
+        # Cuando es GET simplemente muestra la página de registro
         return render_template("register.html")
     else:
-        # In case of POST method, Register new user
+        # Cuando es POST, registra nuevo usuario
 
         rut_input = request.form.get("rut")
 
-        # Ensure RUT was submitted
+        # Asegura que el RUT fue ingresado
         if not request.form.get("rut"):
             flash("Debe ingresar RUT.", "error")
             return render_template("register.html") 
@@ -30,90 +30,86 @@ def register():
             flash("RUT no puede tener puntos y debe tener guion.", "error")
             return render_template("register.html") 
         
-        # Ensure username was submitted
+        # Asegura que el nombre de usuario fue ingresado
         if not request.form.get("username"):
             flash("Debe ingresar un nombre de usuario.", "error")
             return render_template("register.html") 
 
-        # Ensure password was submitted
+        # Asegura que la contraseña fue ingresada
         elif not request.form.get("password"):
-            # return apology("must provide password", 400)
             flash("Debe ingresar una contraseña.", "error")
             return render_template("register.html") 
 
-        # Ensure confirmed password was submitted
+        # Asegura que la contraseña fue ingresada nuevamente
         elif not request.form.get("confirmation"):
-            # return apology("must confirm password", 400)
             flash("Debe ingresar confirmación de contraseña.", "error")
             return render_template("register.html") 
 
-        # Ensure password and confirmed password match
+        # Asegura que la contraseña y la confirmación de la contraseña coincidan
         elif request.form.get("password") != request.form.get("confirmation"):
-            # return apology("password fields don't match", 400)
             flash("ERROR: Contraseña y confirmación no son iguales.", "error")
             return render_template("register.html") 
 
-        # SQL Logic
+        # Logica SQL 
         db = get_db()
         cursor = db.cursor()
 
-        # Query database for username
+        # Query database para username
         cursor.execute("SELECT * FROM users WHERE username = %s", (request.form.get("username"),))
         rows = cursor.fetchall()
 
-        # Ensure username is not already taken
+        # Asegurar que username no exista
         if len(rows) != 0:
             flash("ERROR: Nombre de usuario ya esta en uso!", "error")
             return render_template("register.html") 
         else:
-            # In case everything is OK, register the new user, rut, and the hashed password into the DB
+            # Si todo esta OK, registra nuevo usuario, rut, and la contraseña con hash en la DB
             cursor.execute("INSERT INTO users (rut, username, hash) VALUES (%s, %s, %s)", 
                            (request.form.get("rut"), request.form.get("username"), generate_password_hash(request.form.get("password"))))
-            db.commit()  # Commit the transaction to save changes
+            db.commit()  # Commit la transaccion para guardar cambios
 
-        cursor.close()  # Close the cursor
-        db.close()  # Close the database connection
+        cursor.close()  # Cerrar el cursor
+        db.close()  # Cerrar la conexión con la DB
 
-        # Redirect user to login form
+        # Redireccionar al usuario al login form
         return redirect("/")
 
 @manejo_cuentas.route("/change_password", methods=["GET", "POST"])
 @admin_login_required
 def change_password():
-    """Change password of a specified user"""
+    """Cambiar contraseña del usuario seleccionado"""
     
     if request.method == "GET":
-        # In case of GET, simply show the change password page
+        # En caso de GET, simplemente muestra la página para cambiar la contraseña
         return render_template("edit_account.html")
     else:
-        # In case of POST method, change the password
+        # En caso de POST, cambia la contraseña
 
-        # Ensure username was submitted
+        # Asegurar que se ingresó un nombre de usuario
         if not request.form.get("username"):
             flash("Debe ingresar nombre de usuario.", "error")
             return render_template("login.html")
 
-        # Ensure new password was submitted
+        # Asegurar que se ingresó una nueva contraseña
         elif not request.form.get("password"):
             flash("Debe ingresar una contraseña.", "error")
             return render_template("login.html")
 
-        # Ensure new password was confirmed
+        # Asegurar que se confirmó la nueva contraseña
         elif not request.form.get("confirmation"):
             flash("Debe confirmar contraseña.", "error")
             return render_template("login.html")
 
-        # Ensure password and confirmed password match
+        # Asegurar que la contraseña y la confirmación coincidan
         elif request.form.get("password") != request.form.get("confirmation"):
-            # return apology("new password fields don't match", 400)
             flash("ERROR: Contraseña y confirmación no son iguales.", "error")
             return render_template("login.html")
 
-        # SQL Logic
-        db = get_db()  # Assuming you have a function to get the database connection
+        # Lógica SQL
+        db = get_db() 
         cursor = db.cursor()
 
-        # Check if the specified username exists
+        # Verifica si existe el nombre de usuario especificado
         cursor.execute("SELECT * FROM users WHERE username = %s", (request.form.get("username"),))
         user = cursor.fetchone()
 
@@ -121,22 +117,23 @@ def change_password():
             flash("ERROR: No se encuentra ninguna cuenta con ese usuario.", "error")
             return render_template("edit_account.html")
             
-        # No hay ningun problema
-        # Update the password in the database
+        # No hay ningún problema
+        # Actualiza la contraseña en la base de datos
         cursor.execute("UPDATE users SET hash = %s WHERE username = %s", 
                        (generate_password_hash(request.form.get("password")), request.form.get("username")))
-        db.commit()  # Commit the transaction to save changes
+        db.commit()  # Confirma la transacción para guardar los cambios
 
-        cursor.close()  # Close the cursor
-        db.close()  # Close the database connection
+        cursor.close()  # Cierra el cursor
+        db.close()  # Cierra la conexión a la base de datos
 
-        # Redirect user after changing the password
+        # Redirige al usuario después de cambiar la contraseña
         return redirect("/")
+
 
 @manejo_cuentas.route("/view_accounts")
 @admin_login_required
 def view_accounts():
-    """View all user accounts"""
+    """Ver todas las cuentas de usuario"""
     
     db = get_db()
     cursor = db.cursor()
@@ -150,3 +147,31 @@ def view_accounts():
     
     return render_template("view_accounts.html", users=usuarios_formateados)
 
+
+@manejo_cuentas.route("/delete_account", methods=["POST"])
+@admin_login_required
+def delete_account():
+    """Eliminar cuenta de usuario"""
+    from flask import request, flash, redirect
+    
+    user_id = request.form.get("user_id")
+    
+    if not user_id:
+        flash("ID de usuario no proporcionado.", "warning")
+        return redirect("/view_accounts")
+    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        # Eliminar el usuario con el proporcionado ID
+        cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        db.commit()
+        cursor.close()
+        db.close()
+        
+        flash("Usuario eliminado exitosamente.", "success")
+    except Exception as e:
+        print(f"Error al eliminar usuario: {e}")
+        flash("Hubo un error al intentar eliminar el usuario.", "danger")
+    
+    return redirect("/view_accounts")
