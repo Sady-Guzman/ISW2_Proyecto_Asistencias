@@ -1,0 +1,83 @@
+services:
+  # Flask App Service
+  - name: flask-app
+    type: web
+    env: docker
+    dockerfilePath: Dockerfile  # Path to your Flask app Dockerfile
+    buildCommand: ""           # No additional build commands needed
+    startCommand: flask run --host=0.0.0.0 --port=10000  # Flask runs on port 10000 in Render
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://postgres:domino@flask-db.internal:5432/postgres
+    healthCheckPath: /
+    ports:
+      - port: 10000
+    mounts:
+      - type: volume
+        name: horario-mensual
+        path: /app/horario_mensual
+    dependsOn:
+      - flask-db
+
+  # PostgreSQL Database Service
+  - name: flask-db
+    type: database
+    databaseType: postgresql
+    plan: starter  # Adjust based on your usage (starter/professional)
+    user: postgres
+    password: domino
+    databaseName: postgres
+    region: oregon # Choose a region close to your audience
+    mounts:
+      - type: file
+        name: init-sql
+        path: /docker-entrypoint-initdb.d/init.sql  # Initialize database with your `init.sql`
+
+  # Selenium Service
+  - name: selenium
+    type: service
+    env: docker
+    image: selenium/standalone-chrome:4.1.0
+    ports:
+      - port: 4444  # Selenium server port
+    dependsOn:
+      - flask-app
+      - flask-db
+    mounts:
+      - type: tmpfs
+        path: /dev/shm
+
+  # Test Service (For CI/CD)
+  - name: test
+    type: worker
+    env: docker
+    dockerfilePath: Dockerfile.test
+    startCommand: pytest  # Runs tests using Pytest
+    dependsOn:
+      - flask-app
+      - selenium
+      - flask-db
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://postgres:domino@flask-db.internal:5432/test_db
+    mounts:
+      - type: volume
+        name: app-code
+        path: /app
+
+volumes:
+  - name: postgres-data
+    type: persistent
+    path: /var/lib/postgresql/data
+
+  - name: horario-mensual
+    type: persistent
+    path: /app/horario_mensual
+
+  - name: init-sql
+    type: file
+    path: ./init.sql
+
+  - name: app-code
+    type: volume
+    path: ./
