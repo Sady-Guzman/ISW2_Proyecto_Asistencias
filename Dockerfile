@@ -29,7 +29,7 @@ COPY . .
 
 
 # Expone puerto 5000
-EXPOSE 5000
+EXPOSE 10000
 
 # Corre comandos para iniciar
 CMD ["flask", "run", "--host=0.0.0.0"]
